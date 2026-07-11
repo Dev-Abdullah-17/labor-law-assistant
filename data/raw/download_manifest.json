@@ -1,0 +1,68 @@
+[
+  {
+    "doc_id": "sindh_standing_orders_2015",
+    "act_name": "Sindh Terms of Employment (Standing Orders) Act",
+    "url": "https://sindhlaws.gov.pk/setup/publications_SindhCode/PUB-NEW-18-000108.pdf",
+    "status": "SUCCESS",
+    "http_status": 200,
+    "error": null,
+    "output_path": "C:\\labor-law-assistant\\data\\raw\\sindh_standing_orders_2015.pdf",
+    "sha256": "7546cdd279f27e1c4f2dc7696dd88f34264977e8838ecca5a8f60288efb1232a",
+    "downloaded_at": "2026-07-11T08:54:15.243709+00:00"
+  },
+  {
+    "doc_id": "sindh_shops_commercial_2015",
+    "act_name": "Sindh Shops and Commercial Establishments Act",
+    "url": "https://sindhlaws.gov.pk/setup/publications_SindhCode/PUB-NEW-18-000109.pdf",
+    "status": "SUCCESS",
+    "http_status": 200,
+    "error": null,
+    "output_path": "C:\\labor-law-assistant\\data\\raw\\sindh_shops_commercial_2015.pdf",
+    "sha256": "a04fa4d6c5f74f90c569ea419c3339bff820b183e469b766573a9a1532a0a451",
+    "downloaded_at": "2026-07-11T08:54:17.102122+00:00"
+  },
+  {
+    "doc_id": "sindh_minimum_wages_2015",
+    "act_name": "Sindh Minimum Wages Act",
+    "url": "https://sindhlaws.gov.pk/setup/publications_SindhCode/PUB-NEW-18-000105.pdf",
+    "status": "SUCCESS",
+    "http_status": 200,
+    "error": null,
+    "output_path": "C:\\labor-law-assistant\\data\\raw\\sindh_minimum_wages_2015.pdf",
+    "sha256": "fff12f0dd1826b01b592c4c78eec310328c7a55553b3b07d9ce1c1c4935f0d81",
+    "downloaded_at": "2026-07-11T08:54:18.505161+00:00"
+  },
+  {
+    "doc_id": "sindh_minimum_wages_gazette_latest",
+    "act_name": "Sindh Minimum Wages \u2014 Gazette Notification",
+    "url": "https://lhr.sindh.gov.pk/storage/notification/OL8Q4MaVQ18yHrSR6KekiQcOCvNF23dUdSRuOLyG.pdf",
+    "status": "SUCCESS",
+    "http_status": 200,
+    "error": null,
+    "output_path": "C:\\labor-law-assistant\\data\\raw\\sindh_minimum_wages_gazette_latest.pdf",
+    "sha256": "56ba5bc5bf08f7084c077ee1c49e60dbe8e04e86240ca4d69976f3e66f0f03d7",
+    "downloaded_at": "2026-07-11T08:54:21.995308+00:00"
+  },
+  {
+    "doc_id": "sindh_payment_of_wages_2015",
+    "act_name": "Sindh Payment of Wages Act",
+    "url": "https://sindhlaws.gov.pk/setup/publications_SindhCode/PUB-NEW-18-000186.pdf",
+    "status": "SUCCESS",
+    "http_status": 200,
+    "error": null,
+    "output_path": "C:\\labor-law-assistant\\data\\raw\\sindh_payment_of_wages_2015.pdf",
+    "sha256": "89a7fdb35eae219c61722b584b8c3d61b5080a683178ad0f3e10ea1d6da033e0",
+    "downloaded_at": "2026-07-11T08:54:23.494216+00:00"
+  },
+  {
+    "doc_id": "sindh_industrial_relations_2013",
+    "act_name": "Sindh Industrial Relations Act",
+    "url": "https://sindhhighcourt.gov.pk/downloads/source_files/Sindh%20Industrial%20Relation%20Act,%202013.pdf",
+    "status": "SUCCESS",
+    "http_status": 200,
+    "error": null,
+    "output_path": "C:\\labor-law-assistant\\data\\raw\\sindh_industrial_relations_2013.pdf",
+    "sha256": "4f513aa428ec820801ad06568a1169c4b42f38bb85f24876543787ffbeb67dc1",
+    "downloaded_at": "2026-07-11T08:54:25.762580+00:00"
+  }
+]

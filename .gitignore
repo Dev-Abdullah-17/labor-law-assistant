@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Downloaded PDFs are large binaries; download_manifest.json tracks what's there
+data/raw/*.pdf
+
+# Per-page parsed text is a build artifact of ingest.parse
+data/interim/
