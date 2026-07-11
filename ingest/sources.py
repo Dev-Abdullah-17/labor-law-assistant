@@ -112,10 +112,10 @@ SOURCES: list[DocumentSource] = [
         notes=(
             "Given directly in SPEC.md. SPEC.md also asks whether the Sindh "
             "Industrial Relations Act 2021 (clr.org.pk) supersedes this version. "
-            "The 2021 PDF appears to be a scanned/image-heavy document and its "
-            "text could not be reviewed to confirm a repeal clause, so this "
-            "milestone ingests the 2013 Act only. The 2021 version's existence and "
-            "unresolved supersession status is an open item — see PROGRESS.md."
+            "Resolved: the 2021 clr.org.pk document is the Rules made under the "
+            "2013 Act, not a superseding Act — the 2013 Act remains current and is "
+            "the correct primary source. No further action needed; closed in "
+            "PROGRESS.md."
         ),
     ),
     # Phase 2 — explicitly deferred per SPEC.md. Registered now so the source

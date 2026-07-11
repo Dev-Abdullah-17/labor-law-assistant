@@ -24,15 +24,17 @@ All 6 core documents downloaded on the first attempt (no retries needed). For th
 
 ### Decisions
 - **Added `data/interim/`**, not in SPEC.md's literal folder tree, to hold per-page parsed text (this milestone's output) separately from `data/processed/`, which SPEC.md defines as Milestone 2's *chunked* JSON output — different schema, shouldn't share a directory.
-- **Industrial Relations Act**: ingested the 2013 Act only (matches the URL given in SPEC.md; confirmed text-native, sourced from the Sindh High Court). The Sindh Industrial Relations Act 2021 (clr.org.pk) was located but appears to be a scanned/image-heavy PDF; its text could not be reviewed to confirm whether it supersedes the 2013 Act. **Open item**: confirm the 2021 Act's status and, if it supersedes the 2013 Act, re-ingest it (likely requiring OCR, since it's scanned) before this act is used in the final knowledge base.
+- **Industrial Relations Act**: ingested the 2013 Act only (matches the URL given in SPEC.md; confirmed text-native, sourced from the Sindh High Court). **Resolved (2026-07-11):** the Sindh Industrial Relations Act 2021 document (clr.org.pk) is the **Rules made under the 2013 Act**, not a superseding Act — the 2013 Act remains the current, correct primary source. No further action needed. Closed.
 - **Fixture PDFs generated at test time** (`tests/conftest.py`) rather than checked in as static binaries — keeps the whole test suite reviewable as code with no binary diffs in git history.
 
 ### What broke / open items
-- **`sindh_minimum_wages_gazette_latest.pdf` is a CamScanner scan with no text layer** (all 3 pages extract to just the literal string "CamScanner" — confirmed by inspection). This is a real scanned-document case, not a parsing bug. Per SPEC.md, the ILO NATLEX fallback strategy doesn't apply here (there is no NATLEX alternative for a gazette notification). **This document needs OCR or a text-native replacement before it can be used** — flagging for a decision rather than attempting OCR unprompted. Its "latest" status and the actual wage rate/effective date are also unconfirmed and should be verified against an official source before this feeds any answer.
-- Sindh Industrial Relations Act 2021 vs. 2013 — see Decisions above.
+- **Minimum wage gazette notification — still open.** The original download (`sindh_minimum_wages_gazette_latest.pdf`, from lhr.sindh.gov.pk) was a CamScanner scan with no text layer (all 3 pages extracted to just the literal string "CamScanner") and has been **deleted** from `data/raw/` and `data/interim/`. Two replacement candidates were tried on 2026-07-11, verifying content as before rather than trusting the URL blindly:
+  - `clr.org.pk/Labour-Laws/Minimum Wage Notification/Sindh Unskilled Workers Minimum Wages 2025.pdf` — resolves (200, real PDF, 3 pages) but is **also scanned/image-only**: 0 extractable characters on every page via both pypdf and pdfplumber.
+  - `sessi.gov.pk/Unskilled Minimum Wage 25-26.pdf` — **404, dead link**.
+
+  Neither produced a usable text-native document, so no replacement has been ingested — this act is currently **not represented in the corpus**. Target content once a working source is found: Sindh, FY 2025-26, Rs 40,000/month for unskilled workers, effective 1 July 2025 (`version_date` should be set to `2025-07-01`). Note for whenever this is resolved: **a revised Rs 43,000 notification is reportedly pending (proposed July 2026)** — this document will need updating again once that notification is formally issued. Next step: source a text-native copy manually (a scan is fine as source-of-truth for a human, but not for this pipeline without adding OCR, which is out of scope unless requested).
 
 ### Metrics
-- 6/6 core documents downloaded successfully on first attempt.
-- 131 total pages parsed across 6 documents (20 + 19 + 14 + 3 + 16 + 59).
-- 1/6 documents flagged as scanned (the minimum-wage gazette, 100% of its 3 pages text-thin); 5/6 text-native with 0% thin pages.
+- 6/6 core documents downloaded successfully on first attempt (Milestone 1 baseline); the gazette notification has since been removed pending a usable source, so 5/6 core documents currently have usable ingested content.
+- 128 total pages parsed across the 5 remaining documents (20 + 19 + 14 + 16 + 59).
 - 20 pytest tests, all passing; no real network calls in the test suite (requests fully mocked in `test_download.py`).
