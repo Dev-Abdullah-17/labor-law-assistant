@@ -94,6 +94,24 @@ def _clean_toc_title(raw: str) -> str:
     return re.sub(r"\s+", " ", title)
 
 
+INLINE_TITLE_RE = re.compile(r"^\s*\d{1,3}[A-Z]?\.\s+([^:\n]{1,80}):")
+
+
+def _extract_inline_title(section_text: str) -> str | None:
+    """Fallback title extraction for documents with no TOC at all (title
+    appears inline right after the section number, ending in a colon).
+
+    Only ever called when the document's relevant TOC dict is completely
+    empty — documents that have a real TOC with a few genuine gaps (e.g.
+    the Industrial Relations Act) must keep showing UNKNOWN_TITLE for those
+    gaps rather than have a title guessed from body text.
+    """
+    m = INLINE_TITLE_RE.match(section_text)
+    if m:
+        return m.group(1).strip()
+    return None
+
+
 REPEATED_LINE_MIN_OCCURRENCES = 10
 
 
@@ -363,7 +381,12 @@ def chunk_document(parsed: dict) -> list[dict]:
     chunks: list[dict] = []
     for section in sections:
         titles = main_titles if section.namespace == MAIN_NAMESPACE else schedule_titles
-        title = titles.get(section.number, UNKNOWN_TITLE)
+        title = titles.get(section.number)
+        if title is None:
+            if not titles:
+                title = _extract_inline_title(section.text) or UNKNOWN_TITLE
+            else:
+                title = UNKNOWN_TITLE
         section_number_label = f"{section.namespace} {section.number}"
 
         pieces = split_oversized_section(section.text)

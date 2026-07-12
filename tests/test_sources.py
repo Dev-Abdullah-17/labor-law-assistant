@@ -38,6 +38,7 @@ def test_expected_core_doc_ids_present() -> None:
         "sindh_minimum_wages_gazette_latest",
         "sindh_payment_of_wages_2015",
         "sindh_industrial_relations_2013",
+        "sindh_maternity_benefits_2018",
     }
     actual = {s.doc_id for s in core_sources()}
     assert actual == expected

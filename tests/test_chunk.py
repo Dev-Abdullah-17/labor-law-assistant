@@ -240,6 +240,61 @@ def test_unknown_title_sentinel_used_when_toc_has_no_entry():
     assert section_2["section_title"] == UNKNOWN_TITLE
 
 
+def test_inline_title_fallback_used_when_document_has_no_toc_at_all():
+    """A real quirk found in the Sindh Maternity Benefits Act, 2018: the
+    document has no table of contents at all (unlike 4 of the other 5 core
+    Acts), but each section's title appears inline right after the section
+    number, ending in a colon (e.g. "3. Mandatory maternal leave:"). When the
+    TOC dict is completely empty, titles should be recovered from this inline
+    pattern instead of falling back to UNKNOWN_TITLE."""
+    page1 = (
+        "THE SAMPLE NO-TOC ACT, 2018\n\n"
+        "[1st January, 2018]\n\n"
+        "WHEREAS it is expedient to regulate sample matters;\n\n"
+        "It is hereby enacted as follows:-\n\n"
+        "1. Short title, extent and commencement: This Act may be called the "
+        "Sample No-TOC Act, 2018.\n\n"
+        "2. Mandatory sample leave: Every employer shall grant leave as follows.\n"
+    )
+    doc = {
+        "doc_id": "sample_no_toc_act_2018",
+        "act_name": "The Sample No-TOC Act",
+        "act_year": 2018,
+        "source_url": "https://example.com/sample-no-toc-act.pdf",
+        "version_date": "2018-01-01",
+        "pages": [{"page_number": 1, "text": page1, "char_count": len(page1)}],
+    }
+
+    chunks = chunk_document(doc)
+    section_1 = next(c for c in chunks if c["section_number"] == "Section 1")
+    section_2 = next(c for c in chunks if c["section_number"] == "Section 2")
+
+    assert section_1["section_title"] == "Short title, extent and commencement"
+    assert section_2["section_title"] == "Mandatory sample leave"
+
+
+def test_inline_title_fallback_does_not_mask_genuine_toc_gaps():
+    """Documents that DO have a TOC (even with real gaps, like sections 15
+    and 40 in the actual Industrial Relations Act) must keep showing
+    UNKNOWN_TITLE for those gaps — the inline fallback must never activate
+    just because a single section's TOC entry is missing."""
+    pages = _sample_pages()
+    pages[0]["text"] = pages[0]["text"].replace(
+        "2. Definitions and interpretation of terms used\n throughout this Act.\n", ""
+    )
+    doc = {
+        "doc_id": "sample_test_act_2020",
+        "act_name": "The Sample Test Act",
+        "act_year": 2020,
+        "source_url": "https://example.com/sample-test-act.pdf",
+        "version_date": "2020-01-01",
+        "pages": pages,
+    }
+    chunks = chunk_document(doc)
+    section_2 = next(c for c in chunks if c["section_number"] == "Section 2")
+    assert section_2["section_title"] == UNKNOWN_TITLE
+
+
 def test_non_act_document_chunks_as_a_whole():
     """A gazette notification has no 'enacted as follows' clause, no TOC, and
     no real Act sections — its numbered conditions are not statute sections.

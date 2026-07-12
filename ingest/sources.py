@@ -135,6 +135,35 @@ SOURCES: list[DocumentSource] = [
             "PROGRESS.md."
         ),
     ),
+    DocumentSource(
+        doc_id="sindh_maternity_benefits_2018",
+        act_name="Sindh Maternity Benefits Act",
+        act_year=2018,
+        url="https://clr.org.pk/Labour-Laws/Sindh/Sindh%20Maternity%20Benefits%20Act,%202018.pdf",
+        output_filename="sindh_maternity_benefits_2018.pdf",
+        category="core",
+        version_date="2018-05-08",
+        notes=(
+            "Added (2026-07-12) to close the maternity-leave corpus gap flagged "
+            "during Milestone 3 verification — the 1958 Ordinance cross-reference "
+            "was superseded for Sindh by this Act (Sindh Act No. XXXIX of 2018). "
+            "Two candidate URLs were given for verification: (a) clr.org.pk and "
+            "(b) sindhlaws.gov.pk PUB-18-000045. Candidate (a) was downloaded and "
+            "inspected directly (pypdf, then deleted the scratch copy) BEFORE "
+            "registering this entry: confirmed correct act name/number, 14 "
+            "sections, real extractable text (2391 + 2919 chars across 2 pages, "
+            "not scanned — no OCR needed), and Section 3 confirms the expected "
+            "16-week leave period (4 weeks pre-delivery + 12 weeks post-delivery). "
+            "Candidate (b) was not needed. Also a real chunker quirk: unlike 5 of "
+            "the other 6 core documents, this Act's PDF has no table of contents "
+            "at all — section titles appear inline instead (e.g. '3. Mandatory "
+            "maternal leave:'). Handled via a narrowly-scoped inline-title "
+            "fallback in ingest/chunk.py (_extract_inline_title), which only "
+            "activates when the document's TOC dict is completely empty, so it "
+            "cannot mask genuine TOC gaps in other documents (e.g. IRA 2013's "
+            "sections 15/40, which correctly remain UNKNOWN_TITLE)."
+        ),
+    ),
     # Phase 2 — explicitly deferred per SPEC.md. Registered now so the source
     # list is the single place to extend later; not attempted this milestone.
     DocumentSource(

@@ -64,5 +64,16 @@
     "output_path": "C:\\labor-law-assistant\\data\\raw\\sindh_industrial_relations_2013.pdf",
     "sha256": "4f513aa428ec820801ad06568a1169c4b42f38bb85f24876543787ffbeb67dc1",
     "downloaded_at": "2026-07-11T08:54:25.762580+00:00"
+  },
+  {
+    "doc_id": "sindh_maternity_benefits_2018",
+    "act_name": "Sindh Maternity Benefits Act",
+    "url": "https://clr.org.pk/Labour-Laws/Sindh/Sindh%20Maternity%20Benefits%20Act,%202018.pdf",
+    "status": "SUCCESS",
+    "http_status": 200,
+    "error": null,
+    "output_path": "C:\\labor-law-assistant\\data\\raw\\sindh_maternity_benefits_2018.pdf",
+    "sha256": "39ebb3bfa74f1d5f09d15f865c81c6de510ca2f41ce56947257bde6867079f31",
+    "downloaded_at": "2026-07-12T17:11:07.178122+00:00"
   }
 ]
