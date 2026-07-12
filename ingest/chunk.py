@@ -448,7 +448,13 @@ def main() -> int:
     for doc_id in processed:
         chunks = json.loads((PROCESSED_DIR / f"{doc_id}.json").read_text(encoding="utf-8"))
         unknown_titles = sum(1 for c in chunks if c["section_title"] == UNKNOWN_TITLE)
-        flag = f"  (!) {unknown_titles} chunk(s) with UNKNOWN title" if unknown_titles else ""
+        empty_text = sum(1 for c in chunks if not c["text"].strip())
+        flags = []
+        if unknown_titles:
+            flags.append(f"(!) {unknown_titles} chunk(s) with UNKNOWN title")
+        if empty_text:
+            flags.append(f"(!!) {empty_text} chunk(s) with EMPTY text — check ingest.parse/ocr_fallback output")
+        flag = "  " + "; ".join(flags) if flags else ""
         print(f"{doc_id:<38} {len(chunks)}{flag}")
 
     if missing:
