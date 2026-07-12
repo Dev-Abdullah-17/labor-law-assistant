@@ -15,9 +15,14 @@ chromadb>=0.5
 pymupdf>=1.24
 pytesseract>=0.3
 
-# Milestone 3 — API
-# fastapi>=...
-# uvicorn>=...
+# Milestone 3 — API + generation
+fastapi>=0.115
+uvicorn[standard]>=0.32
+# Groq free tier (openai/gpt-oss-120b / llama-3.1-8b-instant) — genuinely
+# free, no billing account required (unlike Anthropic and Gemini, both of
+# which gate their free tiers behind a card on file). See PROGRESS.md for
+# the full provider story.
+groq>=0.13
 
 # Milestone 4 — eval
 # ragas>=...

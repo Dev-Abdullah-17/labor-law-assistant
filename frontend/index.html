@@ -1,0 +1,126 @@
+<title>Labor Law Assistant (Sindh, Pakistan)</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 6rem;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.3rem; margin-bottom: 0.25rem; }
+  .disclaimer {
+    background: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffe69c;
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    .disclaimer { background: #4a3c0a; color: #ffe69c; border-color: #6b5410; }
+  }
+  #messages { display: flex; flex-direction: column; gap: 0.9rem; margin-bottom: 1rem; }
+  .msg { padding: 0.7rem 0.9rem; border-radius: 10px; max-width: 90%; }
+  .msg.user { align-self: flex-end; background: #2563eb; color: white; }
+  .msg.assistant { align-self: flex-start; background: #f1f3f5; color: #111; }
+  .msg.assistant.refused { background: #f8d7da; color: #58151c; border: 1px solid #f1aeb5; }
+  @media (prefers-color-scheme: dark) {
+    .msg.assistant { background: #2a2a2e; color: #eee; }
+    .msg.assistant.refused { background: #4a1c22; color: #f1aeb5; border-color: #7a2c34; }
+  }
+  .citations { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .citations details {
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.82rem;
+  }
+  .citations summary { cursor: pointer; font-weight: 600; }
+  .citations .chunk-text { margin-top: 0.4rem; white-space: pre-wrap; opacity: 0.85; }
+  form { position: fixed; bottom: 0; left: 0; right: 0; background: Canvas; padding: 0.75rem; border-top: 1px solid #d0d5dd; }
+  .form-inner { max-width: 720px; margin: 0 auto; display: flex; gap: 0.5rem; }
+  input[type="text"] { flex: 1; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid #d0d5dd; font-size: 1rem; }
+  button { padding: 0.6rem 1.1rem; border-radius: 8px; border: none; background: #2563eb; color: white; font-size: 1rem; cursor: pointer; }
+  button:disabled { opacity: 0.6; cursor: default; }
+</style>
+
+<h1>Labor Law Assistant</h1>
+<div class="disclaimer">
+  Covers Sindh provincial + selected federal law only. Not legal advice.
+</div>
+
+<div id="messages"></div>
+
+<form id="chat-form">
+  <div class="form-inner">
+    <input type="text" id="input" placeholder="Ask a question about Sindh labor law..." autocomplete="off" />
+    <button type="submit" id="send-btn">Send</button>
+  </div>
+</form>
+
+<script>
+  const API_BASE = "http://127.0.0.1:8000";
+  const messagesEl = document.getElementById("messages");
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("send-btn");
+
+  let history = [];
+
+  function addMessage(role, text, opts = {}) {
+    const div = document.createElement("div");
+    div.className = `msg ${role}` + (opts.refused ? " refused" : "");
+    div.textContent = text;
+
+    if (opts.citations && opts.citations.length) {
+      const citationsEl = document.createElement("div");
+      citationsEl.className = "citations";
+      for (const c of opts.citations) {
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+        summary.textContent = `${c.act_name} (${c.act_year}), ${c.section_number} — ${c.section_title}, p.${c.page}`;
+        const chunkText = document.createElement("div");
+        chunkText.className = "chunk-text";
+        chunkText.textContent = c.text || "";
+        details.appendChild(summary);
+        details.appendChild(chunkText);
+        citationsEl.appendChild(details);
+      }
+      div.appendChild(citationsEl);
+    }
+
+    messagesEl.appendChild(div);
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const message = input.value.trim();
+    if (!message) return;
+
+    addMessage("user", message);
+    input.value = "";
+    sendBtn.disabled = true;
+
+    try {
+      const response = await fetch(`${API_BASE}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, history }),
+      });
+      const data = await response.json();
+
+      addMessage("assistant", data.answer, { refused: data.refused, citations: data.citations });
+
+      history.push({ role: "user", content: message });
+      history.push({ role: "assistant", content: data.answer });
+    } catch (err) {
+      addMessage("assistant", "Error contacting the server. Is the API running?", { refused: true });
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  });
+</script>

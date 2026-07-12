@@ -109,3 +109,44 @@ Chunked section counts were cross-checked against each document's own TOC entry 
 ### Metrics (updated)
 - 221 chunks total (220 + 1 gazette), all 6 core documents now represented in the corpus.
 - 28 pytest tests total (1 new for the whole-document chunking path), all passing.
+
+---
+
+## Milestone 3 — Answer generation with citations + chat API/UI (2026-07-12)
+
+### Built
+- `api/generate.py` — `generate_answer(question, hits)`: two-layer refusal (score-threshold pre-filter, no LLM call if the best retrieval score exceeds 12.0; an LLM-level instruction to refuse if the retrieved excerpts don't actually answer the question even after passing the score filter). Cites as `(Act Name Year, s. N, p. P)`. Appends a fixed caveat sentence when any cited chunk has `superseded_risk: True`.
+- `api/rewrite.py` — `rewrite_query(question, history)`: skips the LLM call entirely for single-turn conversations (no history); otherwise rewrites a follow-up into a standalone question.
+- `api/main.py` — FastAPI app: `POST /chat` (rewrite → retrieve → generate pipeline), `GET /health` (verifies the Chroma collection is reachable, returns chunk count or 503).
+- `frontend/index.html` — single-file vanilla JS/HTML/CSS chat UI: scope disclaimer banner, chat bubbles, refused-answer styling, expandable citation cards showing the actual chunk text. No build step, no framework.
+- `tests/test_generate.py`, `tests/test_rewrite.py` — 9 new tests, LLM client fully mocked, no real network calls.
+
+### The provider story — three attempts before something worked
+This milestone's biggest time sink wasn't the RAG logic — it was finding an LLM provider the user could actually use for free. Recorded in detail because it's a real part of the build, not a footnote:
+
+1. **Anthropic** (`claude-sonnet-5` + `claude-haiku-4-5`) — the original plan, fully implemented and working (structurally verified via mocked tests and live request wiring). Abandoned per explicit user request for a genuinely free option — Anthropic requires a card on file.
+2. **Google Gemini free tier** (`gemini-3.5-flash` + `gemini-3.1-flash-lite`) — rewritten to use `google-genai`. First hit a 403 on the newer `client.interactions.create()` API surface; switched to the older, universally-available `client.models.generate_content()` — same 403. Isolated with a minimal repro (`client.models.list()` succeeds, every `generate_content()` call fails identically across 3 different models) to confirm it wasn't a code or model-name issue. Root cause, confirmed by the user's AI Studio dashboard screenshot: **both of their Gemini API keys show "Set up billing — Unavailable"** — Google's "free tier" still gates the generation endpoint behind a linked billing account (listing models doesn't require it, generating does), even though free-tier usage itself isn't billed. Not genuinely cardless.
+3. **Groq free tier** (`openai/gpt-oss-120b` + `llama-3.1-8b-instant`) — genuinely no card required (confirmed by direct research before implementing, not assumed). Works immediately once a key was created at console.groq.com. This is what shipped.
+
+Also caught and fixed **mid-build: the user pasted a real API key into `.env.example`** (the git-tracked template) instead of `.env` (gitignored). Checked `git log`/`git status` immediately — confirmed nothing had been committed or pushed, so no real exposure occurred — then corrected both files before continuing. No key rotation was necessary.
+
+### A real finding, not a bug: the maternity leave "done when" example doesn't have an answer in-corpus
+SPEC.md's Milestone 3 done-criteria example is "ask about maternity leave, then paternity leave, both retrieve correctly." Live-testing this surfaced something worth recording: **maternity leave doesn't have a specific answer in the ingested corpus either.** The Shops & Commercial Establishments Act, Section 14 ("Annual and Maternity leave") specifies fourteen days for *annual* leave, then in subsection (4) says only: *"Every female employee shall be entitled maternity leave as defined in the Maternity Benefit Ordinance, 1958"* — a cross-reference to a completely different, un-ingested law, with no day-count given. The system correctly refused rather than reporting the annual-leave figure as the maternity-leave answer — this is the refusal logic working exactly as intended (CLAUDE.md: never guess), not a retrieval or generation defect. Confirmed by reading the actual chunk text, not assumed.
+
+Since a demo of two correct refusals doesn't showcase the positive/citation path, also live-tested:
+- *"how many days notice for termination"* → correct, fully-cited answer from two acts (Standing Orders Act Schedule Standing Order 16 + Shops Act Section 19, both "one month's notice").
+- *"what is the current minimum wage for unskilled workers"* → correct answer (Rs 40,000/month, effective 1 July 2025) citing the OCR'd gazette chunk, **with the `superseded_risk` caveat correctly appended** — the first live end-to-end confirmation that the Milestone 2 gazette-OCR work and Milestone 3 generation logic connect correctly.
+
+### Decisions
+- Refusal threshold (12.0) calibrated empirically from Milestone 2's real retrieval scores: relevant results cluster ~4.3–9.7, a deliberately irrelevant query scored ~15.1–15.7 — a clear gap, not a guessed number.
+- `.env` loading was silently missing (`python-dotenv` was in `requirements.txt` since Milestone 1 but never actually invoked). Added `load_dotenv()` to `api/main.py`.
+- Chased a phantom Unicode bug (`�` appearing in printed/repr'd output around em-dashes) for several minutes before confirming via `'—' in answer` / `'�' in answer` checks that the actual API response data was 100% clean UTF-8 — the corruption was in how a tool's terminal output was being displayed during debugging, not in the application. No code change was needed; noting this so a future session doesn't re-chase the same non-bug.
+
+### What broke / open items
+- Visual browser verification initially blocked by this environment's network reliability (Playwright's 183MB Chromium download kept resetting near 0%, same pattern hit earlier with the embedding model) — resolved on a retry with `--dns-result-order=ipv4first`; screenshots confirm the disclaimer banner and refusal styling render correctly with zero console errors.
+- Milestone 2's minimum-wage gazette gap (see above) is now fully closed as of the OCR addendum; this milestone's finding is specifically that *maternity* leave duration is a **separate, still-open gap** (Maternity Benefit Ordinance, 1958 is not in the corpus — Phase 2 candidate).
+
+### Metrics
+- 37 pytest tests total (9 new for generate/rewrite), all passing, zero real network calls in the suite.
+- Provider pivots: Anthropic → Gemini → Groq, 2 fully-implemented-then-abandoned integrations before the working one.
+- 4/4 live queries against the real Groq API behaved correctly: 2 correct refusals (maternity, paternity), 2 correct cited answers (termination notice, minimum wage with caveat).
