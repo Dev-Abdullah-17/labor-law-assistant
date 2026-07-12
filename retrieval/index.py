@@ -31,6 +31,8 @@ METADATA_FIELDS = (
     "page",
     "source_url",
     "version_date",
+    "ocr",
+    "superseded_risk",
 )
 
 

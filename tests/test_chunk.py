@@ -34,6 +34,8 @@ REQUIRED_METADATA_FIELDS = {
     "page",
     "source_url",
     "version_date",
+    "ocr",
+    "superseded_risk",
     "text",
 }
 
@@ -236,3 +238,39 @@ def test_unknown_title_sentinel_used_when_toc_has_no_entry():
     chunks = chunk_document(doc)
     section_2 = next(c for c in chunks if c["section_number"] == "Section 2")
     assert section_2["section_title"] == UNKNOWN_TITLE
+
+
+def test_non_act_document_chunks_as_a_whole():
+    """A gazette notification has no 'enacted as follows' clause, no TOC, and
+    no real Act sections — its numbered conditions are not statute sections.
+    It should be chunked as a single citable unit, not forced through the
+    Act section-boundary logic (which would misapply 'Section N' labels)."""
+    notification_text = (
+        "GOVERNMENT OF SINDH\nLABOUR & HUMAN RESOURCES DEPARTMENT\n"
+        "Karachi dated 28th July, 2025\n\nNotification\n\n"
+        "No. L-II-13-3/2016-I: the Government of Sindh fixes the minimum "
+        "monthly wage at Rs. 40,000/- for unskilled workers, effective from "
+        "1st July, 2025, subject to the following conditions:\n\n"
+        "1. These revised minimum wages will apply to all unskilled workers.\n"
+        "2. This minimum wage shall be uniformly applicable across the province.\n"
+    )
+    doc = {
+        "doc_id": "sample_notification_2025",
+        "act_name": "Sindh Minimum Wages — Gazette Notification",
+        "act_year": 2015,
+        "source_url": "https://example.com/notification.pdf",
+        "version_date": "2025-07-01",
+        "ocr": True,
+        "superseded_risk": True,
+        "pages": [{"page_number": 1, "text": notification_text, "char_count": len(notification_text)}],
+    }
+
+    chunks = chunk_document(doc)
+
+    assert len(chunks) == 1
+    chunk = chunks[0]
+    assert chunk["section_number"] == "Notification"
+    assert chunk["section_title"] == "Sindh Minimum Wages — Gazette Notification"
+    assert "Rs. 40,000/-" in chunk["text"]
+    assert chunk["ocr"] is True
+    assert chunk["superseded_risk"] is True

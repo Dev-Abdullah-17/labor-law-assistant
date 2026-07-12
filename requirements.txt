@@ -9,6 +9,12 @@ pytest>=8.0
 sentence-transformers>=3.0
 chromadb>=0.5
 
+# Milestone 2 — OCR fallback for the one confirmed-scanned document
+# (minimum wage gazette notification). Also requires the Tesseract OCR
+# engine installed separately (not pip-installable) — see README.md.
+pymupdf>=1.24
+pytesseract>=0.3
+
 # Milestone 3 — API
 # fastapi>=...
 # uvicorn>=...

@@ -28,11 +28,7 @@ All 6 core documents downloaded on the first attempt (no retries needed). For th
 - **Fixture PDFs generated at test time** (`tests/conftest.py`) rather than checked in as static binaries — keeps the whole test suite reviewable as code with no binary diffs in git history.
 
 ### What broke / open items
-- **Minimum wage gazette notification — still open.** The original download (`sindh_minimum_wages_gazette_latest.pdf`, from lhr.sindh.gov.pk) was a CamScanner scan with no text layer (all 3 pages extracted to just the literal string "CamScanner") and has been **deleted** from `data/raw/` and `data/interim/`. Two replacement candidates were tried on 2026-07-11, verifying content as before rather than trusting the URL blindly:
-  - `clr.org.pk/Labour-Laws/Minimum Wage Notification/Sindh Unskilled Workers Minimum Wages 2025.pdf` — resolves (200, real PDF, 3 pages) but is **also scanned/image-only**: 0 extractable characters on every page via both pypdf and pdfplumber.
-  - `sessi.gov.pk/Unskilled Minimum Wage 25-26.pdf` — **404, dead link**.
-
-  Neither produced a usable text-native document, so no replacement has been ingested — this act is currently **not represented in the corpus**. Target content once a working source is found: Sindh, FY 2025-26, Rs 40,000/month for unskilled workers, effective 1 July 2025 (`version_date` should be set to `2025-07-01`). Note for whenever this is resolved: **a revised Rs 43,000 notification is reportedly pending (proposed July 2026)** — this document will need updating again once that notification is formally issued. Next step: source a text-native copy manually (a scan is fine as source-of-truth for a human, but not for this pipeline without adding OCR, which is out of scope unless requested).
+- **Minimum wage gazette notification — resolved 2026-07-12 via OCR, see Milestone 2 addendum below.** (Originally: the lhr.sindh.gov.pk and sessi.gov.pk candidates both failed — CamScanner scan with no text layer, and a 404, respectively. Root document is the clr.org.pk scan, which is also image-only. This is a one-off, explicitly-approved scope expansion — not a general OCR capability.)
 
 ### Metrics
 - 6/6 core documents downloaded successfully on first attempt (Milestone 1 baseline); the gazette notification has since been removed pending a usable source, so 5/6 core documents currently have usable ingested content.
@@ -89,9 +85,27 @@ Chunked section counts were cross-checked against each document's own TOC entry 
 ### What broke / open items
 - Sections 15 and 40 of the Industrial Relations Act have no title (genuine TOC gap in the source — see quirk #6 above).
 - The 8 Schedule items in the Shops & Commercial Establishments Act and 7 in the Industrial Relations Act's Public Utility Service list have no title (source genuinely has none — see quirk #5).
-- Minimum wage gazette notification remains unresolved from Milestone 1 (see above) — still not in the corpus, so queries about the current minimum wage rate will not retrieve it.
+- ~~Minimum wage gazette notification remains unresolved~~ — **resolved 2026-07-12, see addendum below.**
 
 ### Metrics
 - 220 chunks across 5 documents, 17 with the explicit `UNKNOWN` title sentinel (all traced to genuine source-document gaps, not chunker defects).
 - 27 pytest tests total (7 new for the chunker), all passing.
 - 5/5 manual test queries returned correct top results.
+
+---
+
+## Addendum to Milestone 2 — Minimum wage gazette resolved via OCR (2026-07-12)
+
+**Approved scope expansion**: OCR for this one document only, not a general capability. Re-downloaded the clr.org.pk scan (`sindh_minimum_wages_gazette_latest.pdf`, 3 pages, confirmed 0 extractable characters via pypdf/pdfplumber — genuinely image-only) and OCR'd it with a new `ingest/ocr_fallback.py` module (PyMuPDF rasterizes each page at 300 DPI, `pytesseract` extracts text; Tesseract 5.4.0 installed via winget).
+
+**Content verified before indexing** (full extracted text reviewed): Rs. 40,000/month for unskilled adult and adolescent workers, effective 1 July 2025 (01.07.2025), Government of Sindh Notification No. L-II-13-3/2016-I dated 28 July 2025, signed by Secretary Muhammad Rafique Qureshi. The rate and date appear consistently across 4+ and 3+ separate mentions respectively — high confidence despite some OCR noise in the peripheral cc-distribution list on page 3 (garbled proper nouns, not load-bearing).
+
+**New metadata fields** — `ocr: bool` and `superseded_risk: bool` added to `DocumentSource` (`ingest/sources.py`) and threaded through every chunk's metadata (`ingest/chunk.py`, `retrieval/index.py`). Both are `True` only for this document; `False` (default) for all others. `superseded_risk` exists because a revised Rs 43,000 notification is reportedly pending (proposed July 2026) — Milestone 3's answer generation should check this flag and append a "rates may have been revised, verify the latest notification" caveat when citing this chunk.
+
+**Chunking design decision**: this document is a gazette notification, not an Act — it has no "enacted as follows" clause, no table of contents, and its numbered items are conditions in an announcement, not statute sections. Forcing it through the Act-oriented section-boundary/TOC pipeline (built for the other 5 documents) would have misapplied "Section N" labels to content that isn't a section of anything. Added a `_chunk_as_whole_document` path in `ingest/chunk.py`, triggered when no enactment clause is found: the whole document becomes one chunk (`section_number: "Notification"`), splitting only if it exceeds the 1200-word threshold (it doesn't — 789 words).
+
+**Verification**: `python -m retrieval.query "what is the current minimum wage for unskilled workers"` returns the gazette chunk as the #2 result (score 7.53) with the correct Rs. 40,000 content, alongside the Minimum Wages Act's board-composition/rate-declaration sections.
+
+### Metrics (updated)
+- 221 chunks total (220 + 1 gazette), all 6 core documents now represented in the corpus.
+- 28 pytest tests total (1 new for the whole-document chunking path), all passing.

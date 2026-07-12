@@ -300,12 +300,66 @@ def _pack_pieces_with_overlap(pieces: list[str], max_words: int, overlap_words: 
     return chunks
 
 
+def _base_chunk_metadata(parsed: dict) -> dict:
+    """Fields every chunk carries regardless of which chunking path produced it."""
+    return {
+        "act_name": parsed["act_name"],
+        "act_year": parsed["act_year"],
+        "source_url": parsed["source_url"],
+        "version_date": parsed.get("version_date"),
+        "ocr": parsed.get("ocr", False),
+        "superseded_risk": parsed.get("superseded_risk", False),
+    }
+
+
+def _chunk_as_whole_document(parsed: dict) -> list[dict]:
+    """Chunk a non-Act document (e.g. a gazette notification) as a whole.
+
+    The section-boundary/TOC logic above assumes an Act's structure (an
+    enactment clause, a table of contents, numbered sections with titles).
+    A notification has none of that — just numbered conditions in a short
+    announcement — so forcing it through that pipeline would misapply
+    "Section N" labels to conditions that aren't sections of an Act at all.
+    Simpler and honest: treat the whole document as one citable unit,
+    split only if it's actually oversized.
+    """
+    pages = parsed["pages"]
+    full_text, _ = _full_text_and_page_offsets(pages)
+    pieces = split_oversized_section(full_text.strip())
+
+    base = _base_chunk_metadata(parsed)
+    first_page = pages[0]["page_number"] if pages else 1
+
+    chunks: list[dict] = []
+    for part_idx, piece_text in enumerate(pieces):
+        chunk_id = f"{parsed['doc_id']}__whole_document"
+        if len(pieces) > 1:
+            chunk_id += f"__part{part_idx + 1}"
+        chunks.append(
+            {
+                "chunk_id": chunk_id,
+                "section_number": "Notification",
+                "section_title": parsed["act_name"],
+                "page": first_page,
+                "text": piece_text,
+                **base,
+            }
+        )
+    return chunks
+
+
 def chunk_document(parsed: dict) -> list[dict]:
     """Produce metadata-tagged chunks for one parsed document."""
     pages = parsed["pages"]
+    full_text, _ = _full_text_and_page_offsets(pages)
+
+    if ENACTED_MARKER_RE.search(full_text) is None:
+        return _chunk_as_whole_document(parsed)
+
     main_titles, schedule_titles = parse_toc(pages)
     sections = find_section_boundaries(pages)
 
+    base = _base_chunk_metadata(parsed)
     chunks: list[dict] = []
     for section in sections:
         titles = main_titles if section.namespace == MAIN_NAMESPACE else schedule_titles
@@ -320,14 +374,11 @@ def chunk_document(parsed: dict) -> list[dict]:
             chunks.append(
                 {
                     "chunk_id": chunk_id,
-                    "act_name": parsed["act_name"],
-                    "act_year": parsed["act_year"],
                     "section_number": section_number_label,
                     "section_title": title,
                     "page": section.page,
-                    "source_url": parsed["source_url"],
-                    "version_date": parsed.get("version_date"),
                     "text": piece_text,
+                    **base,
                 }
             )
 
@@ -355,6 +406,8 @@ def chunk_all(sources: list[DocumentSource] | None = None) -> tuple[list[str], l
         parsed["doc_id"] = source.doc_id
         parsed["source_url"] = source.url
         parsed["version_date"] = source.version_date
+        parsed["ocr"] = source.ocr
+        parsed["superseded_risk"] = source.superseded_risk
 
         chunks = chunk_document(parsed)
         out_path = PROCESSED_DIR / f"{source.doc_id}.json"

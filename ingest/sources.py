@@ -22,6 +22,8 @@ class DocumentSource:
     category: str  # "core" | "phase2_skip"
     version_date: str | None
     notes: str
+    ocr: bool = False
+    superseded_risk: bool = False
 
 
 SOURCES: list[DocumentSource] = [
@@ -74,26 +76,32 @@ SOURCES: list[DocumentSource] = [
         doc_id="sindh_minimum_wages_gazette_latest",
         act_name="Sindh Minimum Wages — Gazette Notification",
         act_year=2015,
-        url=None,
+        url="https://clr.org.pk/Labour-Laws/Minimum%20Wage%20Notification/Sindh%20Unskilled%20Workers%20Minimum%20Wages%202025.pdf",
         output_filename="sindh_minimum_wages_gazette_latest.pdf",
         category="core",
-        version_date=None,
+        version_date="2025-07-01",
+        ocr=True,
+        superseded_risk=True,
         notes=(
-            "STILL UNRESOLVED (2026-07-11): three URLs tried so far, none usable. "
-            "(1) lhr.sindh.gov.pk/storage/notification/OL8Q4MaVQ18yHrSR6KekiQcOCvNF23dUdSRuOLyG.pdf "
-            "— downloaded but is a CamScanner scan with no text layer; deleted. "
-            "(2) clr.org.pk/Labour-Laws/Minimum Wage Notification/Sindh Unskilled "
-            "Workers Minimum Wages 2025.pdf — also scanned/image-only, 0 extractable "
-            "chars on every page (pypdf + pdfplumber both confirm). "
-            "(3) sessi.gov.pk/Unskilled Minimum Wage 25-26.pdf — 404, dead link. "
-            "url left as None (SKIPPED_NO_URL) rather than pointing at a known-bad "
-            "source. Target content once a working source is found: Sindh, FY "
-            "2025-26, Rs 40,000/month for unskilled workers, effective 2025-07-01 "
-            "(version_date should become 2025-07-01). Note: a revised Rs 43,000 "
-            "notification is reportedly pending (proposed July 2026) — this "
-            "document will need updating again once that is formally issued. "
-            "Kept in category='core' (not phase2_skip) so it keeps surfacing as "
-            "ACTION REQUIRED until resolved, rather than being silently deprioritized."
+            "RESOLVED (2026-07-12) via approved one-off OCR: this document is a "
+            "genuine scanned image PDF (confirmed by pypdf + pdfplumber returning 0 "
+            "extractable chars on every page). Two prior candidates also failed — "
+            "lhr.sindh.gov.pk (CamScanner scan, deleted) and sessi.gov.pk (404). "
+            "OCR'd via ingest.ocr_fallback (PyMuPDF rasterize at 300 DPI + "
+            "pytesseract) and manually verified against the extracted text before "
+            "indexing: Rs 40,000/month for unskilled adult and adolescent workers, "
+            "effective 1 July 2025 (01.07.2025), Government of Sindh Notification "
+            "No. L-II-13-3/2016-I dated 28 July 2025, signed by Secretary Muhammad "
+            "Rafique Qureshi. Peripheral cc-distribution text on page 3 has minor "
+            "OCR noise (garbled names) but the rate/date/authority — the content "
+            "that matters for citation — extracted cleanly and consistently across "
+            "multiple repeated mentions in the document. "
+            "ocr=True and superseded_risk=True are carried through to every chunk's "
+            "metadata: a revised Rs 43,000 notification is reportedly pending "
+            "(proposed July 2026), so answers citing this document should carry a "
+            "'rates may have been revised, verify the latest notification' caveat "
+            "(added in Milestone 3's answer generation) until that notification is "
+            "formally issued and this document is updated."
         ),
     ),
     DocumentSource(
