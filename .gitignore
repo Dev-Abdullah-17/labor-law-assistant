@@ -9,3 +9,10 @@ data/raw/*.pdf
 
 # Per-page parsed text is a build artifact of ingest.parse
 data/interim/
+
+# Chunked JSON is a build artifact of ingest.chunk, regenerable via
+# ingest.download -> ingest.parse -> ingest.chunk
+data/processed/*.json
+
+# Local persistent ChromaDB store is a build artifact of retrieval.index
+data/chroma/

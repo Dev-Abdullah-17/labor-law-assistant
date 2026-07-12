@@ -5,9 +5,9 @@ pdfplumber>=0.11
 python-dotenv>=1.0
 pytest>=8.0
 
-# Milestone 2 (uncomment when implementing) — chunking + vector store
-# sentence-transformers>=...
-# chromadb>=...
+# Milestone 2 — chunking + vector store
+sentence-transformers>=3.0
+chromadb>=0.5
 
 # Milestone 3 — API
 # fastapi>=...
