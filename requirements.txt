@@ -25,7 +25,15 @@ uvicorn[standard]>=0.32
 groq>=0.13
 
 # Milestone 4 — eval
-# ragas>=...
+# RAGAS itself (ragas==0.4.3, the only version on PyPI) could not be made to
+# import in this environment: it unconditionally imports an unused Google
+# Vertex AI integration that no longer exists in current langchain-community,
+# and installing it corrupted the project's numpy install (no prebuilt numpy
+# wheel exists for Python 3.13, so pip fell back to a from-source MinGW
+# build that segfaulted on `import numpy`). See PROGRESS.md for the full
+# story. Per explicit user decision, eval/run.py implements the same four
+# RAGAS metrics directly as LLM-judge prompts against the Groq client
+# already listed above — no new dependency needed.
 
 # Milestone 5 — hybrid search
 # rank_bm25>=...
