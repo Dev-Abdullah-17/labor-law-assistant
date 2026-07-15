@@ -77,10 +77,11 @@ def test_superseded_risk_chunk_gets_caveat_appended():
     hits = [_hit(score=4.5, superseded_risk=True)]
     mock_client = MagicMock()
     mock_client.chat.completions.create.return_value = _mock_completion(
-        "The minimum wage is Rs 40,000/month (Sindh Minimum Wages Act 2015, s. Notification, p. 1)."
+        "Deductions for absence are proportional to the absence period "
+        "(Sindh Payment of Wages Act 2015, s. 9, p. 8)."
     )
     with patch("api.generate._get_client", return_value=mock_client):
-        result = generate_answer("what is the minimum wage", hits)
+        result = generate_answer("what deductions are allowed for absence", hits)
 
     assert result["refused"] is False
     assert "may have been revised" in result["answer"]
@@ -96,3 +97,67 @@ def test_non_superseded_risk_chunk_has_no_caveat():
         result = generate_answer("what deductions are allowed", hits)
 
     assert "may have been revised" not in result["answer"]
+
+
+def test_superseded_risk_chunk_retrieved_but_not_cited_gets_no_caveat():
+    """A real Milestone 4 finding: an irrelevant chunk that happens to be
+    superseded_risk=True must not trigger the caveat if the answer never
+    actually cites it — only the chunk(s) actually named in the answer's
+    text should count."""
+    hits = [
+        _hit(score=5.0, superseded_risk=False, act_name="Sindh Shops and Commercial Establishments Act"),
+        _hit(score=6.7, superseded_risk=True, act_name="Sindh Minimum Wages — Gazette Notification"),
+    ]
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.return_value = _mock_completion(
+        "No child may be employed in any establishment for any nature of work "
+        "(Sindh Shops and Commercial Establishments Act 2015, s. 20, p. 13)."
+    )
+    with patch("api.generate._get_client", return_value=mock_client):
+        result = generate_answer("child employment rules", hits)
+
+    assert "may have been revised" not in result["answer"]
+
+
+def test_act_name_echoed_from_question_is_corrected_to_actual_citation():
+    """A real Milestone 4 finding (R8): the model named the Act mentioned in
+    the user's question in its prose, even though nothing by that name was
+    retrieved — the actual citation named a different, real Act. The answer
+    should be corrected to consistently name the Act it actually cited."""
+    hits = [_hit(score=5.0, act_name="Sindh Shops and Commercial Establishments Act")]
+    mock_client = MagicMock()
+    mock_client.chat.completions.create.return_value = _mock_completion(
+        "The Sindh Prohibition of Employment of Children Act provides that no child "
+        "may be employed in any establishment for any nature of work "
+        "(Sindh Shops and Commercial Establishments Act 2015, s. 20, p. 13)."
+    )
+    with patch("api.generate._get_client", return_value=mock_client):
+        result = generate_answer(
+            "What are the rules for employing children under the Sindh Prohibition "
+            "of Employment of Children Act?",
+            hits,
+        )
+
+    assert "Sindh Prohibition of Employment of Children Act" not in result["answer"]
+    assert result["answer"].count("Sindh Shops and Commercial Establishments Act") == 2
+
+
+def test_act_name_correction_skipped_when_multiple_acts_genuinely_cited():
+    """When the answer legitimately cites more than one distinct Act, the
+    echo-correction must not guess which one is "correct" — it should leave
+    a genuinely multi-source answer untouched."""
+    hits = [
+        _hit(score=4.0, act_name="Sindh Shops and Commercial Establishments Act"),
+        _hit(score=4.2, act_name="Sindh Terms of Employment (Standing Orders) Act"),
+    ]
+    mock_client = MagicMock()
+    text = (
+        "One month's notice is required (Sindh Shops and Commercial Establishments Act "
+        "2015, s. 19, p. 13), and the same rule applies under the Sindh Terms of "
+        "Employment (Standing Orders) Act 2015, Schedule Standing Order 16, p. 15)."
+    )
+    mock_client.chat.completions.create.return_value = _mock_completion(text)
+    with patch("api.generate._get_client", return_value=mock_client):
+        result = generate_answer("how much notice is required to terminate an employee", hits)
+
+    assert result["answer"] == text
