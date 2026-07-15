@@ -16,3 +16,7 @@ data/processed/*.json
 
 # Local persistent ChromaDB store is a build artifact of retrieval.index
 data/chroma/
+
+# eval.run's incremental checkpoint is a resumable working file, not a
+# result worth tracking — the dated JSON in eval/results/ is the deliverable.
+eval/results/_checkpoint.json

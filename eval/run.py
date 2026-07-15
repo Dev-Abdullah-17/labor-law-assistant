@@ -33,19 +33,60 @@ from __future__ import annotations
 import json
 import re
 import sys
+import time
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from groq import Groq
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from groq import APIConnectionError, Groq, RateLimitError
 
 from api.generate import generate_answer
 from api.rewrite import rewrite_query
 from retrieval.query import query as retrieve
 
+# This environment has documented, transient DNS/connection flakiness on
+# longer-running network calls (see PROGRESS.md — hit previously with the
+# Playwright and embedding-model downloads). A full eval run makes ~100
+# sequential Groq calls, so a bare retry with backoff is needed for the run
+# to complete reliably; it is not a general production reliability feature.
+_MAX_RETRIES = 4
+_RETRY_BACKOFF_SECONDS = 3
+_RATE_LIMIT_WAIT_RE = re.compile(r"try again in (?:(\d+)m)?(\d+(?:\.\d+)?)s", re.IGNORECASE)
+
+
+def _rate_limit_wait_seconds(exc: RateLimitError, default: float = 60.0) -> float:
+    message = str(exc)
+    match = _RATE_LIMIT_WAIT_RE.search(message)
+    if not match:
+        return default
+    minutes = int(match.group(1)) if match.group(1) else 0
+    seconds = float(match.group(2))
+    return minutes * 60 + seconds + 2  # small safety margin
+
+
+def _with_retry(fn, *args, **kwargs):
+    for attempt in range(1, _MAX_RETRIES + 1):
+        try:
+            return fn(*args, **kwargs)
+        except APIConnectionError:
+            if attempt == _MAX_RETRIES:
+                raise
+            time.sleep(_RETRY_BACKOFF_SECONDS * attempt)
+        except RateLimitError as exc:
+            if attempt == _MAX_RETRIES:
+                raise
+            wait = _rate_limit_wait_seconds(exc)
+            print(f"  [rate limited, waiting {wait:.0f}s before retry {attempt}/{_MAX_RETRIES}]", file=sys.stderr)
+            time.sleep(wait)
+    raise RuntimeError("unreachable: retry loop exhausted without returning or raising")
+
 TESTSET_PATH = Path(__file__).resolve().parent / "testset.jsonl"
 RESULTS_DIR = Path(__file__).resolve().parent / "results"
 
-JUDGE_MODEL = "openai/gpt-oss-120b"
+JUDGE_MODEL = "llama-3.1-8b-instant"
 
 JUDGE_SYSTEM_PROMPT = """You are an evaluation judge for a legal RAG system covering Sindh, Pakistan labor law. \
 Given a question, a human-written reference answer, the system's generated answer, and the retrieved \
@@ -90,7 +131,8 @@ def judge_answerable(question: str, reference_answer: str, generated_answer: str
         f"System's generated answer: {generated_answer}\n\n"
         f"Retrieved contexts:\n{_format_contexts(hits)}"
     )
-    completion = _get_client().chat.completions.create(
+    completion = _with_retry(
+        _get_client().chat.completions.create,
         model=JUDGE_MODEL,
         messages=[
             {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
@@ -149,71 +191,108 @@ def load_testset() -> list[dict]:
 
 def run_single_turn(question: str, history: list[dict]) -> tuple[str, list[dict], dict]:
     """Run one turn through the real pipeline. Returns (standalone_query, hits, result)."""
-    standalone_query = rewrite_query(question, history)
+    standalone_query = _with_retry(rewrite_query, question, history)
     hits = retrieve(standalone_query)
-    result = generate_answer(standalone_query, hits)
+    result = _with_retry(generate_answer, standalone_query, hits)
     return standalone_query, hits, result
 
 
-def evaluate() -> dict:
+CHECKPOINT_PATH = RESULTS_DIR / "_checkpoint.json"
+
+
+def load_checkpoint() -> dict:
+    if CHECKPOINT_PATH.exists():
+        return json.loads(CHECKPOINT_PATH.read_text(encoding="utf-8"))
+    return {"answerable": {}, "refusal": {}, "follow_up_subject": {}}
+
+
+def save_checkpoint(checkpoint: dict) -> None:
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    CHECKPOINT_PATH.write_text(json.dumps(checkpoint, indent=2), encoding="utf-8")
+
+
+def evaluate(entry_ids: set[str] | None = None) -> dict:
+    """Run the eval pipeline, checkpointing after every case so a crash or a
+    deliberately-batched run never repeats work already paid for in tokens.
+
+    If `entry_ids` is given, only those top-level testset entry ids are
+    processed this call (still skipping any already-checkpointed cases
+    within them) — this is what makes running in small batches practical.
+    """
     entries = load_testset()
-    answerable_results = []
-    refusal_results = []
-    follow_up_subject_results = []
+    if entry_ids is not None:
+        entries = [e for e in entries if e["id"] in entry_ids]
+    checkpoint = load_checkpoint()
 
     for entry in entries:
         eid = entry["id"]
         etype = entry["type"]
 
         if etype in ("answerable", "expected_refusal"):
+            bucket = "answerable" if etype == "answerable" else "refusal"
+            if eid in checkpoint[bucket]:
+                continue
             question = entry["question"]
             standalone_query, hits, result = run_single_turn(question, [])
 
             if etype == "answerable":
                 judge = judge_answerable(question, entry["reference_answer"], result["answer"], hits)
-                answerable_results.append({
+                checkpoint["answerable"][eid] = {
                     "id": eid, "question": question, "known_hard": entry.get("known_hard", False),
                     "refused": result["refused"], "answer": result["answer"], **judge,
-                })
+                }
             else:
                 verdict = score_refusal(result["answer"], result["refused"], entry["expected_behavior"])
-                refusal_results.append({
+                checkpoint["refusal"][eid] = {
                     "id": eid, "question": question, "refused": result["refused"],
                     "answer": result["answer"], **verdict,
-                })
+                }
+            save_checkpoint(checkpoint)
 
         elif etype == "follow_up":
             history: list[dict] = []
             for turn_idx, turn in enumerate(entry["turns"]):
+                turn_id = f"{eid}-turn{turn_idx + 1}"
                 question = turn["question"]
+                bucket = "answerable" if turn["expected_outcome"] == "answerable" else "refusal"
+
+                if turn_id in checkpoint[bucket]:
+                    # Already scored on a prior batch — reuse its stored answer to
+                    # keep rebuilding history correctly for any later turn.
+                    stored = checkpoint[bucket][turn_id]
+                    history.append({"role": "user", "content": question})
+                    history.append({"role": "assistant", "content": stored["answer"]})
+                    continue
+
                 standalone_query, hits, result = run_single_turn(question, history)
 
                 subject_check = check_subject_naming(standalone_query, turn.get("subject_keywords", []))
-                if subject_check["checked"]:
-                    follow_up_subject_results.append({
-                        "id": f"{eid}-turn{turn_idx + 1}", "original_question": question, **subject_check,
-                    })
+                if subject_check["checked"] and turn_id not in checkpoint["follow_up_subject"]:
+                    checkpoint["follow_up_subject"][turn_id] = {
+                        "id": turn_id, "original_question": question, **subject_check,
+                    }
 
                 if turn["expected_outcome"] == "answerable":
                     judge = judge_answerable(question, turn["reference_answer"], result["answer"], hits)
-                    answerable_results.append({
-                        "id": f"{eid}-turn{turn_idx + 1}", "question": question, "known_hard": False,
+                    checkpoint["answerable"][turn_id] = {
+                        "id": turn_id, "question": question, "known_hard": False,
                         "refused": result["refused"], "answer": result["answer"], **judge,
-                    })
+                    }
                 else:
                     verdict = score_refusal(result["answer"], result["refused"], turn["expected_behavior"])
-                    refusal_results.append({
-                        "id": f"{eid}-turn{turn_idx + 1}", "question": question, "refused": result["refused"],
+                    checkpoint["refusal"][turn_id] = {
+                        "id": turn_id, "question": question, "refused": result["refused"],
                         "answer": result["answer"], **verdict,
-                    })
+                    }
+                save_checkpoint(checkpoint)
 
                 history.append({"role": "user", "content": question})
                 history.append({"role": "assistant", "content": result["answer"]})
 
     return {
-        "answerable_results": answerable_results,
-        "refusal_results": refusal_results,
-        "follow_up_subject_results": follow_up_subject_results,
+        "answerable_results": list(checkpoint["answerable"].values()),
+        "refusal_results": list(checkpoint["refusal"].values()),
+        "follow_up_subject_results": list(checkpoint["follow_up_subject"].values()),
     }
 
 
@@ -288,7 +367,13 @@ def _fmt(v: float | None) -> str:
 
 def main() -> int:
     print(f"Loaded testset: {TESTSET_PATH}")
-    raw = evaluate()
+
+    entry_ids = None
+    if len(sys.argv) > 1:
+        entry_ids = {x.strip() for x in sys.argv[1].split(",") if x.strip()}
+        print(f"Running batch: {sorted(entry_ids)}")
+
+    raw = evaluate(entry_ids)
     summary = summarize(raw)
     print_summary_table(summary)
 

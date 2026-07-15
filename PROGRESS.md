@@ -172,3 +172,70 @@ This is a genuine phrasing-sensitivity edge case in dense-retrieval-only search,
 ### Metrics (updated)
 - 235 chunks total (221 + 14), all 7 core documents now represented in the corpus.
 - 41 pytest tests total (2 new for the inline-title fallback, 1 updated for the new source count), all passing.
+
+---
+
+## Milestone 4 — Evaluation pipeline: eval set + baseline (2026-07-13 to 2026-07-14)
+
+### Built
+- `eval/testset.jsonl` — 52 hand-written entries (37 answerable / 10 expected_refusal / 5 follow_up, the last contributing 10 individual turns), covering leave, termination/notice, hours/overtime, minimum wage, deductions/payment timing, unions/disputes, and Roman Urdu phrasings. Every reference answer and `expected_source` was grounded by reading the actual chunk text in `data/processed/`, not guessed from the act names alone.
+- `eval/run.py` — runs every entry through the real pipeline (`rewrite_query` → `retrieve` → `generate_answer`) and scores each type by its own method:
+  - **answerable**: four RAGAS-style metrics (faithfulness, answer_relevancy, context_precision, context_recall), each scored 0.0–1.0 by an LLM judge.
+  - **expected_refusal**: binary correct/incorrect against each question's own `expected_behavior` (some strict — must refuse; some soft — must avoid a specific forbidden pattern, e.g. a rupee figure, even if not a bare refusal).
+  - **follow_up**: a check that the rewritten standalone query actually names the right subject, plus the turn's own final-answer score (RAGAS-style or refusal-binary, depending on that turn's `expected_outcome`).
+  - Checkpoints every single case to `eval/results/_checkpoint.json` as it goes, so a crash or a deliberate multi-batch run (`python -m eval.run "A1,A2,..."`) never repeats work already paid for in tokens.
+- `tests/test_eval_run.py` — 8 new tests for the pure-logic scoring helpers (`score_refusal`, `check_subject_naming`, `_mean`, `summarize`), no live calls.
+
+### Pre-run corrections to the eval set (your review, before any scoring)
+1. **R8 (gratuity) was flatly wrong.** Grepping the processed corpus for "gratuity" surfaced real, substantive coverage in `Sindh Terms of Employment (Standing Orders) Act`, Schedule Standing Order 16(6): a full lump-sum entitlement (one month's wages per completed year of service, waived if the employer runs an equal-or-better provident fund). Reclassified as answerable (`A36`); replaced R8 with a verified-absent question about the separate Sindh Prohibition of Employment of Children Act (confirmed not registered in `ingest/sources.py`, and the only related content anywhere in the corpus is the Shops Act's one-line Section 20).
+2. **A16** re-verified against the actual Section 7(1) text: the Act fixes the 8:00 p.m. closing time directly, not via a government notification mechanism (Section 4's exemption power is general-purpose, not a rate-setting delegation like the Minimum Wages Board). Reference answer updated to say this explicitly.
+3. **`expected_behavior` added to every refusal entry** (standalone and follow-up), each with a `strict_refusal_required` flag: `true` means only an actual refusal counts as correct; `false` (used for R5 and F3-turn2, per your redefinition) means the answer just has to avoid a specific forbidden pattern — e.g. F3-turn2 passes whether it refuses outright or explains the Board-declares-rates mechanism, as long as it never states a skilled-worker rupee figure.
+4. **Q51 added** (`known_hard: true`) — `"How many days of annual leave do I get under Sindh labor law?"` — verified empirically *before* adding it that this exact phrasing pushes Shops Act s.14 out of the top-5 retrieval window, tracked explicitly as the before/after case for Milestone 5.
+
+### Baseline results (2026-07-14, judge model `llama-3.1-8b-instant`; `generate_answer` unchanged, `openai/gpt-oss-120b`)
+
+| Category | Metric | Score |
+|---|---|---|
+| Answerable (n=45, incl. follow-up answerable turns + Q51) | faithfulness | 0.763 |
+| | answer_relevancy | 0.804 |
+| | context_precision | 0.724 |
+| | context_recall | 0.742 |
+| Expected refusal (n=12, incl. follow-up refusal turns) | binary accuracy | 0.750 (9/12) |
+| Follow-up query rewriting | subject-naming accuracy | 1.000 (10/10) |
+
+Full detail: `eval/results/2026-07-14.json`.
+
+### What the eval actually found — read past the aggregate
+
+**1. The "Sindh"-phrasing retrieval bug (flagged during ingestion) is a real, broader bug class, not a one-off.** `Q51` was the deliberately-tracked known_hard case, but the baseline run also caught **two more instances that weren't flagged in advance**: `A1` ("...under Sindh law?") and `A4` ("...under the Sindh Maternity Benefits Act?") both refused, even though `A4`'s underlying content was manually verified working under slightly different phrasing during the Milestone 3-addendum work two days ago. Root cause confirmed identical each time: mentioning "Sindh" (and especially an Act name + year) pulls in generic "Section 1 — short title, extent, application and commencement" boilerplate from *other* acts, crowding the real answer out of the top-5 window. **A new, more striking instance turned up in the follow-up flow**: `F4-turn2`'s query rewriter correctly identified "temporary" as the subject (subject-naming check passed) but rewrote it into *"Does the Sindh Shops and Commercial Establishments Act 2015 and the Sindh Terms of Employment (Standing Orders) Act 2015 make any distinction..."* — naming two acts and two years — and the resulting retrieval top-5 was **literally Section 1 of five different acts**, nothing else. The rewriter itself can manufacture this failure mode, not just the end user. This is now a well-characterized bug with 4 confirmed reproductions (`A1`, `A4`, `Q51`, `F4-turn2`), a strong, concrete motivation for Milestone 5's hybrid (BM25 + vector) search.
+
+**2. Roman Urdu retrieval is meaningfully weaker than English, right now.** Both Roman Urdu answerable questions failed: `A32` ("Meri salary se kitni katauti ho sakti hai?") and `A33` ("Naukri se nikalte waqt kitne dinon ka notice zaroori hai?") retrieved *completely unrelated* sections (Industrial Relations Act union/strike sections, Maternity Benefits Act's "Overriding effect") — the correct Payment of Wages / Shops Act sections didn't appear anywhere in the top 5. This directly concerns CLAUDE.md's multilingual requirement and is worth its own investigation before claiming Urdu support works, not just a Milestone 5 footnote.
+
+**3. Two plain-English retrieval misses unrelated to the above**: `A17` (continuous-work rest-break question — Shops Act s.7(3) buried in a multi-topic section, out-ranked by other hours/leave sections) and `A36` (the newly-added gratuity question — Standing Order 16(6)'s gratuity clause is deep inside a long, differently-titled "Termination of employment" section and didn't surface in the top 5). These look like chunk-granularity/topic-overlap limitations rather than the "Sindh"-keyword bug — a second, distinct improvement target for Milestone 5.
+
+**4. A second test-design error, same shape as R8's, caught by reading the actual answer**: `R3` ("compensation for permanent disability") was marked `expected_refusal`, but the system correctly answered from Standing Order 12 (Compulsory Group Insurance), which requires insurance "not less than the compensation specified in Schedule IV to the Workmen's Compensation Act, 1923" — a real, substantive, grounded answer. Verified by reading Standing Order 12's full text: this was **my test-design mistake, not a system failure** — I should have grepped for "compensation" the same way I grepped for "gratuity" before finalizing R8. Not yet corrected in `eval/testset.jsonl` — flagging here for your call on whether to reclassify it now or in a follow-up pass.
+
+**5. One genuine, confirmed answer-generation defect, and one false-positive in my own automated check, both found in `R8`'s output:**
+   - **Defect**: the generated answer opened with *"The Sindh Prohibition of Employment of Children Act provides that..."* — but its own parenthetical citation correctly names `(Sindh Shops and Commercial Establishments Act 2015, s. 20, p. 13)`. The model echoed the act name from the user's question into its prose instead of naming the act it actually cited — a real citation-fidelity bug in `api/generate.py`'s prompt/behavior, not caught by the existing refusal logic since retrieval did legitimately return a relevant chunk (Shops Act s.20 is real, on-topic content).
+   - **Defect**: that same answer carried the `superseded_risk` revision caveat ("rates...may have been revised") despite discussing no rate at all. Confirmed by direct retrieval inspection: the irrelevant gazette-notification chunk (`superseded_risk: True`) was the 5th of 5 retrieved hits, and `generate_answer`'s caveat trigger checks *any* retrieved hit rather than only the hit(s) actually cited in the answer.
+   - **False positive**: `F3-turn2`'s automated verdict was FAIL (regex matched a rupee figure), but manual reading shows the answer correctly explains *"wages for skilled and semi-skilled workers...must not be lower than the minimum wage fixed for unskilled workers"* without inventing a skilled-specific figure — it just also correctly restates the real Rs 40,000 unskilled rate as necessary context, which the blunt `fail_regex` couldn't distinguish from a fabricated number. True verdict: **pass**. This is a known, accepted limitation of a regex-based automated check, called out explicitly rather than silently trusted.
+
+### Corrected picture after manual review
+- Refusal accuracy: **9/12 automated**, but `R3` is an invalid test (system was actually correct) and `F3-turn2` is a false-positive fail (system was actually correct) → **true accuracy is ~10/10 on the valid, correctly-scored cases**, with `R3` needing a testset fix before it can be counted at all.
+- Answerable: 8/45 refused (17.8%) breaks down as 4 confirmed "Sindh"-phrasing collisions, 2 Roman Urdu failures, 2 plain-English chunk-granularity misses — a genuinely useful, categorized failure map for Milestone 5, not a single fuzzy number.
+
+### Ragas — a real, verified environment blocker (not a preference)
+Installing `ragas` (0.4.3, the only version on PyPI) **silently corrupted this project's numpy install** — no prebuilt numpy wheel exists for Python 3.13, so pip fell back to building numpy from source, producing a broken MinGW build that segfaulted on a bare `import numpy` (which would have broken embeddings/retrieval/chromadb project-wide, not just eval). Caught immediately, fixed by pinning `numpy==2.2.6` (real cp313 wheels), and re-verified the full test suite plus a live retrieval query before continuing. Separately, `ragas` itself has a hard, unconditional import of an unused Google Vertex AI integration that no longer exists in current `langchain-community` — pinning an older `langchain-community` to work around it then collides with the newer `langchain-core` the same install pulled in (metaclass conflict). Per your explicit decision, `eval/run.py` implements the same four metrics directly as LLM-judge prompts against the project's existing Groq client instead of fighting the dependency chain further; the broken `ragas`/`langchain*` packages were fully uninstalled afterward and the environment re-verified clean (39 tests passing, live Groq call working) before proceeding.
+
+### Groq free-tier daily quota — also real, also worth recording
+Mid-run, `openai/gpt-oss-120b` (the answer-generation model) hit Groq's free-tier **daily token cap** (200,000/day), largely consumed by this session's own extensive live-testing. Rate-limit waits escalated past 25 minutes before a UTC day rollover reset the quota. Fixed two ways: (1) added retry-with-backoff to `eval/run.py` that parses Groq's suggested wait time and retries automatically (caught actual 429s during this run, confirmed working); (2) switched `JUDGE_MODEL` to `llama-3.1-8b-instant`, which draws from a separate per-model quota and is well-suited to structured scoring, so judging no longer competes with `generate_answer`'s own token budget. The full 52-entry run then completed cleanly across 4 batches with only one transient rate-limit retry.
+
+### Metrics
+- 52 eval entries (37 answerable / 10 expected_refusal / 5 follow_up = 10 turns), 45 scored cases + 12 refusal cases + 10 subject-naming checks.
+- 47 pytest tests total (8 new for `eval/run.py`'s scoring logic), all passing.
+- Baseline recorded above is the number Milestone 5's hybrid search needs to beat — both the aggregate and, more importantly, the 8 named failing questions and their 3 distinct root causes.
+
+### What broke / open items
+- `R3` needs reclassification in `eval/testset.jsonl` (same fix pattern as R8) — not yet done, flagged for your decision.
+- Two real `api/generate.py` bugs found (citation act-name fidelity; `superseded_risk` caveat triggering on unused retrieved chunks, not just cited ones) — not yet fixed, flagged for your decision on priority.
+- Roman Urdu retrieval quality is a real, separate concern from the "Sindh"-keyword bug and may need its own investigation (e.g. checking the embedding model's Roman Urdu training coverage) rather than assuming Milestone 5's hybrid search alone will fix it.
