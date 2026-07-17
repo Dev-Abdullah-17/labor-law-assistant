@@ -7,7 +7,10 @@ from unittest.mock import MagicMock, patch
 from api.generate import REFUSAL_MESSAGE, REFUSAL_THRESHOLD, generate_answer
 
 
-def _hit(score: float, superseded_risk: bool = False, **meta_overrides) -> dict:
+_UNSET = object()
+
+
+def _hit(score: float, superseded_risk: bool = False, vector_distance=_UNSET, **meta_overrides) -> dict:
     metadata = {
         "act_name": "Sindh Payment of Wages Act",
         "act_year": 2015,
@@ -20,7 +23,17 @@ def _hit(score: float, superseded_risk: bool = False, **meta_overrides) -> dict:
         "superseded_risk": superseded_risk,
         **meta_overrides,
     }
-    return {"score": score, "metadata": metadata, "text": "Deductions may be made under..."}
+    # vector_distance defaults to `score` — pre-Milestone-5 tests all use
+    # "score" to mean exactly this (the calibrated vector-distance signal
+    # generate_answer's refusal threshold checks; see api/generate.py).
+    # A sentinel (not None) distinguishes "not passed" from "explicitly
+    # None" (a real BM25-only hit with no vector match at all).
+    return {
+        "score": score,
+        "vector_distance": score if vector_distance is _UNSET else vector_distance,
+        "metadata": metadata,
+        "text": "Deductions may be made under...",
+    }
 
 
 def _mock_completion(text: str):
@@ -37,6 +50,19 @@ def test_low_score_refuses_with_no_llm_call():
     assert result["refused"] is True
     assert result["answer"] == REFUSAL_MESSAGE
     assert result["citations"] == []
+
+
+def test_bm25_only_hit_refuses_even_with_good_hybrid_score():
+    """A Milestone 5 design point: a chunk found only by BM25 (no vector
+    match at all, vector_distance=None) must not pass the refusal gate on
+    the strength of its hybrid RRF score alone — RRF's fused score was
+    measured to have no relevance-separating gap (see PROGRESS.md), so
+    only a real vector_distance can clear the threshold."""
+    hits = [_hit(score=-0.03, vector_distance=None)]
+    with patch("api.generate._get_client") as mock_get_client:
+        result = generate_answer("some query", hits)
+    mock_get_client.assert_not_called()
+    assert result["refused"] is True
 
 
 def test_empty_hits_refuses_with_no_llm_call():

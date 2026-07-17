@@ -10,7 +10,13 @@ behind a billing account. See PROGRESS.md for the full provider story.
 
 Two independent layers of refusal, because neither alone is reliable:
 1. A score-threshold pre-filter (cheap, deterministic) — catches queries
-   with no plausible retrieval match at all.
+   with no plausible retrieval match at all. This checks each hit's
+   `vector_distance` (the raw Chroma distance), not the hybrid `score` —
+   Milestone 5 added BM25 + reciprocal rank fusion to retrieval.query for
+   better *ranking*, but RRF's fused score was measured (PROGRESS.md) to
+   have no separating gap between relevant and irrelevant queries the way
+   the original vector distance does, so the calibrated Milestone 3
+   threshold still checks that original, unchanged signal.
 2. An LLM-level instruction to refuse if the retrieved chunks, even though
    they scored well, don't actually answer *this* question. A "leave"
    query can retrieve leave-related chunks by topical similarity without
@@ -110,7 +116,8 @@ def generate_answer(question: str, hits: list[dict]) -> dict:
 
     Returns {"answer": str, "refused": bool, "citations": list[dict]}.
     """
-    if not hits or min(hit["score"] for hit in hits) > REFUSAL_THRESHOLD:
+    vector_distances = [hit["vector_distance"] for hit in hits if hit.get("vector_distance") is not None]
+    if not vector_distances or min(vector_distances) > REFUSAL_THRESHOLD:
         return {"answer": REFUSAL_MESSAGE, "refused": True, "citations": []}
 
     excerpts = _format_excerpts(hits)

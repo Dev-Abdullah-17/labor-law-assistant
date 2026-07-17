@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Labor Law Assistant (Sindh, Pakistan)</title>
 <style>
   :root { color-scheme: light dark; }
@@ -42,6 +43,7 @@
   form { position: fixed; bottom: 0; left: 0; right: 0; background: Canvas; padding: 0.75rem; border-top: 1px solid #d0d5dd; }
   .form-inner { max-width: 720px; margin: 0 auto; display: flex; gap: 0.5rem; }
   input[type="text"] { flex: 1; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid #d0d5dd; font-size: 1rem; }
+  #act-filter { max-width: 40%; padding: 0.6rem 0.4rem; border-radius: 8px; border: 1px solid #d0d5dd; font-size: 0.85rem; background: Canvas; }
   button { padding: 0.6rem 1.1rem; border-radius: 8px; border: none; background: #2563eb; color: white; font-size: 1rem; cursor: pointer; }
   button:disabled { opacity: 0.6; cursor: default; }
 </style>
@@ -55,6 +57,9 @@
 
 <form id="chat-form">
   <div class="form-inner">
+    <select id="act-filter" title="Restrict answers to one Act (optional)">
+      <option value="">All Acts</option>
+    </select>
     <input type="text" id="input" placeholder="Ask a question about Sindh labor law..." autocomplete="off" />
     <button type="submit" id="send-btn">Send</button>
   </div>
@@ -66,8 +71,24 @@
   const form = document.getElementById("chat-form");
   const input = document.getElementById("input");
   const sendBtn = document.getElementById("send-btn");
+  const actFilter = document.getElementById("act-filter");
 
   let history = [];
+
+  (async function loadActs() {
+    try {
+      const response = await fetch(`${API_BASE}/acts`);
+      const data = await response.json();
+      for (const act of data.acts || []) {
+        const option = document.createElement("option");
+        option.value = act;
+        option.textContent = act;
+        actFilter.appendChild(option);
+      }
+    } catch (err) {
+      // Filter dropdown just stays at "All Acts" if this fails — not fatal.
+    }
+  })();
 
   function addMessage(role, text, opts = {}) {
     const div = document.createElement("div");
@@ -108,7 +129,7 @@
       const response = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history }),
+        body: JSON.stringify({ message, history, act_filter: actFilter.value || null }),
       });
       const data = await response.json();
 

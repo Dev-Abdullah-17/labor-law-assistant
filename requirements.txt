@@ -36,4 +36,4 @@ groq>=0.13
 # already listed above — no new dependency needed.
 
 # Milestone 5 — hybrid search
-# rank_bm25>=...
+rank_bm25>=0.2

@@ -1,8 +1,10 @@
 """Milestone 4 evaluation pipeline.
 
 Runs every question in eval/testset.jsonl through the real pipeline
-(api.rewrite.rewrite_query -> retrieval.query.query -> api.generate.generate_answer)
-and scores each of the three question types with the method appropriate to it:
+(api.rewrite.rewrite_query -> api.rewrite.translate_to_english ->
+retrieval.query.query -> api.generate.generate_answer, matching api.main's
+/chat endpoint exactly) and scores each of the three question types with
+the method appropriate to it:
 
 - answerable: four RAGAS-style metrics (faithfulness, answer_relevancy,
   context_precision, context_recall), each scored 0.0-1.0 by an LLM judge.
@@ -44,7 +46,7 @@ load_dotenv()
 from groq import APIConnectionError, Groq, RateLimitError
 
 from api.generate import generate_answer
-from api.rewrite import rewrite_query
+from api.rewrite import rewrite_query, translate_to_english
 from retrieval.query import query as retrieve
 
 # This environment has documented, transient DNS/connection flakiness on
@@ -190,10 +192,18 @@ def load_testset() -> list[dict]:
 
 
 def run_single_turn(question: str, history: list[dict]) -> tuple[str, list[dict], dict]:
-    """Run one turn through the real pipeline. Returns (standalone_query, hits, result)."""
+    """Run one turn through the real pipeline (matching api.main's /chat
+    exactly): rewrite -> translate -> retrieve -> generate.
+
+    Returns (standalone_query, hits, result) — `standalone_query` is the
+    *rewriter's* output (pre-translation), since that's what the
+    subject-naming check cares about; retrieval itself uses the
+    (possibly-translated) English query, same as production.
+    """
     standalone_query = _with_retry(rewrite_query, question, history)
-    hits = retrieve(standalone_query)
-    result = _with_retry(generate_answer, standalone_query, hits)
+    english_query = _with_retry(translate_to_english, standalone_query)
+    hits = retrieve(english_query)
+    result = _with_retry(generate_answer, english_query, hits)
     return standalone_query, hits, result
 
 

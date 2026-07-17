@@ -2,7 +2,7 @@
 
 A RAG-based chatbot that answers questions about Pakistani (Sindh + selected federal) labor law, with citations to the exact act, section, and page. Portfolio project — see `SPEC.md` for the full build plan and `PROGRESS.md` for the milestone-by-milestone build log.
 
-**Status:** Milestone 1 complete — project skeleton + document ingestion (download + per-page parsing).
+**Status:** Milestone 5 complete — hybrid search (BM25 + vector, reciprocal rank fusion), Roman Urdu/Urdu query translation, and metadata filtering by Act.
 
 **Scope disclaimer:** Covers Sindh provincial + selected federal law only. Not legal advice.
 
@@ -29,6 +29,25 @@ Each command prints a summary table and exits non-zero if any document needs att
 ```bash
 pytest
 ```
+
+## Milestone 5 — hybrid search result
+
+Milestone 4's eval baseline found that pure vector search reliably mis-ranked queries mentioning "Sindh" or a full Act name — the generic "short title" section of an unrelated Act would outrank the actually-relevant section, because dense embeddings have no way to down-weight boilerplate terms that appear in nearly every document. Milestone 5 added BM25 (which naturally down-weights common terms via IDF) merged with the existing vector search using reciprocal rank fusion.
+
+**Measured result** (`eval/results/2026-07-17.json`, full detail in `PROGRESS.md`):
+
+| Metric | Before (vector only) | After (hybrid) |
+|---|---|---|
+| Faithfulness | 0.763 | **0.900** |
+| Answer relevancy | 0.841 | **0.948** |
+| Context precision | 0.724 | **0.829** |
+| Context recall | 0.746 | **0.874** |
+
+All 6 individually-tracked failure cases from the baseline (queries like *"How many days of annual leave do I get under Sindh labor law?"*) now retrieve and answer correctly. Not everything improved: 3 other questions that passed before now fail (recorded honestly in `PROGRESS.md`, not hidden), including one — gratuity — that was already failing before hybrid search and isn't fixed by it, since it's a chunk-granularity issue rather than the keyword-collision problem hybrid search targets.
+
+Milestone 5 also added a Roman Urdu / Urdu translation step ahead of retrieval (diagnosed first: the multilingual embedding model underperforms on this legal corpus even in proper Urdu script, and BM25 offers no help at all since the corpus is English-only — translating to English before retrieval was the fix that actually worked) and metadata filtering by Act, available both via the API (`act_filter` on `POST /chat`, `GET /acts`) and the chat UI's dropdown.
+
+## Project structure
 
 ## Project structure
 
