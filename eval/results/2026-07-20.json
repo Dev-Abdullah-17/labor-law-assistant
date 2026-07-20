@@ -1,0 +1,788 @@
+{
+  "run_at": "2026-07-20T17:45:33.994063+00:00",
+  "judge_model": "llama-3.1-8b-instant",
+  "summary": {
+    "answerable": {
+      "faithfulness": 0.8945652173913043,
+      "answer_relevancy": 0.9391304347826087,
+      "context_precision": 0.8250000000000001,
+      "context_recall": 0.8728260869565218,
+      "n": 46,
+      "known_hard_ids": [
+        "Q51"
+      ]
+    },
+    "expected_refusal": {
+      "accuracy": 0.9166666666666666,
+      "n": 12,
+      "n_correct": 11,
+      "failed_ids": [
+        "R8"
+      ]
+    },
+    "follow_up_subject_naming": {
+      "subject_naming_accuracy": 1.0,
+      "n": 10,
+      "n_correct": 10,
+      "failed_ids": []
+    }
+  },
+  "detail": {
+    "answerable_results": [
+      {
+        "id": "A1",
+        "question": "How many days of annual leave is an employee entitled to under Sindh law?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "Under the Sindh Shops and Commercial Establishments Act, an employee is entitled to **fourteen days of annual leave with full wages after twelve months of continuous employment** (Sindh Shops and Commercial Establishments Act 2015, s.\u202f14, p.\u202f11).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful and relevant, but the context precision could be improved by excluding irrelevant sections like Section 6 and 17."
+      },
+      {
+        "id": "A2",
+        "question": "How many days of casual leave can an employee take in a year?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "An employee is entitled to **ten days of casual leave with full wages in each calendar year** (Sindh Shops and Commercial Establishments Act\u202f2015, s.\u202f15, p.\u202f12).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's generated answer is fully faithful, relevant, and based on all relevant contexts, and the contexts are sufficient to produce the reference answer."
+      },
+      {
+        "id": "A3",
+        "question": "How many days of paid sick leave am I entitled to, and can unused days carry forward?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "You are entitled to **eight (8) days of paid sick leave each calendar year**.  \nIf you do not use any of those days, they **may be carried forward**, but the total amount of sick leave you can accumulate at any one time **cannot exceed sixteen (16) days**. (Sindh Shops and Commercial Establishments Act 2015, s.\u202f15, p.\u202f12)",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful, relevant, and sufficient, and all retrieved contexts are relevant to answering the question."
+      },
+      {
+        "id": "A4",
+        "question": "How much maternity leave do I get under the Sindh Maternity Benefits Act?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "Under the Sindh Maternity Benefits Act, an employer must grant a mandatory maternity leave of\u202ffour\u202fweeks before the expected delivery date and\u202ftwelve\u202fweeks after delivery, for a total of\u202fsixteen\u202fweeks\u202f(Sindh Maternity Benefits Act\u202f2018, s.\u202f3, p.\u202f1).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful and relevant, but context precision could be improved by excluding irrelevant sections like the Sindh Minimum Wages Act notification."
+      },
+      {
+        "id": "A5",
+        "question": "What maternity leave is provided in case of a miscarriage?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "In the case of a miscarriage, the law provides **one week of paid maternity leave** (Sindh Maternity Benefits Act\u202f2018, s.\u202f4, p.\u202f1).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful, relevant, and relies on all relevant contexts, and the contexts are sufficient to produce the reference answer."
+      },
+      {
+        "id": "A6",
+        "question": "Who is eligible for maternity benefits under the 2018 Act?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "The Sindh Maternity Benefits Act,\u202f2018 provides maternity benefits to **all female employees who have worked continuously for at least one year immediately before the date of their expected delivery** (Sindh Maternity Benefits Act\u202f2018, s.\u202f5, p.\u202f2).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.25,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful and relevant, but only 25% of the retrieved contexts are relevant to answering this specific question."
+      },
+      {
+        "id": "A7",
+        "question": "How much advance notice must a woman give her employer before taking maternity leave?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "A woman must give her employer written notice **12\u202fweeks before the expected date of delivery** (Sindh Maternity Benefits Act 2018, s.\u202f6, p.\u202f2).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully supported by the retrieved contexts and provides the exact information required by the question."
+      },
+      {
+        "id": "A8",
+        "question": "How much notice is required to terminate the employment of a permanent employee?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "One month\u2019s written notice (or payment of one month\u2019s wages in lieu of notice) must be given to terminate a permanent employee\u2019s service.\u202f(Sindh Shops and Commercial Establishments Act 2015, s.\u202f19, p.\u202f13; Sindh Terms of Employment (Standing Orders) Act 2015, s.\u202f16, p.\u202f15)",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.9,
+        "notes": "The generated answer is mostly faithful to the retrieved contexts, but slightly paraphrased the notice period requirement."
+      },
+      {
+        "id": "A9",
+        "question": "Is a temporary employee entitled to notice before their job is terminated?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "No. A temporary employee is not entitled to any notice (or pay in lieu of notice) when his services are terminated.  \n\n- Sindh Shops and Commercial Establishments Act\u202f2015,\u202fSection\u202f19(2) \u2013 \u201cNo temporary employee \u2026 shall be entitled to any notice or pay in lieu thereof if his services are terminated.\u201d  \n- Sindh Terms of Employment (Standing Orders) Act\u202f2015,\u202fSchedule Standing Order\u202f16(2) \u2013 \u201cNo temporary worker \u2026 shall be entitled to any notice, if his services are terminated by the employer.\u201d",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The generated answer accurately reflects the relevant sections of the Sindh Shops and Commercial Establishments Act 2015 and the Sindh Terms of Employment (Standing Orders) Act 2015."
+      },
+      {
+        "id": "A10",
+        "question": "If an employer needs to retrench workers, which employees are let go first?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "When workers must be retrenched, the employer must first let go the employee who was hired most recently in that particular category of workers (the \u201clast person employed\u201d in that category)\u202f(Sindh Terms of Employment (Standing Orders) Act\u202f2015, Schedule Standing Order\u202f18, p.\u202f16).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful, relevant, and based on the correct context, and the retrieved contexts are sufficient to produce the reference answer."
+      },
+      {
+        "id": "A11",
+        "question": "If an employer wants to hire again after retrenching workers, do the retrenched workers get priority?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "Yes. When an employer intends to re\u2011hire within one year of a retrenchment, the law requires that the retrenched workers be given the first opportunity and \u201cshall have preference over other persons, each having priority according to the length of his service under the employer\u201d (Sindh Terms of Employment (Standing Orders) Act\u202f2015, Schedule Standing Order\u202f19, p.\u202f16).  \n\nA similar rule applies in the construction sector, where a retrenched worker must be given preference for any similar work undertaken by the same contractor or employer within one year (Sindh Terms of Employment (Standing Orders) Act\u202f2015, Schedule Standing Order\u202f20, p.\u202f17).",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.8,
+        "notes": "The system's answer is mostly faithful to the retrieved contexts, but slightly paraphrased the original text."
+      },
+      {
+        "id": "A12",
+        "question": "How are workers classified under Sindh employment law?",
+        "known_hard": false,
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0,
+        "notes": "The system's generated answer is completely off-topic and does not address the question, and the retrieved contexts do not provide any relevant information to answer the question."
+      },
+      {
+        "id": "A13",
+        "question": "What are the maximum daily and weekly working hours for an adult employee?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "An adult employee may not be required or permitted to work more than **nine hours in a day** and **forty\u2011eight hours in a week** (Sindh Shops and Commercial Establishments Act 2015, s.\u202f8, p.\u202f8).",
+        "faithfulness": 0.8,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.6,
+        "notes": "The system's answer is mostly faithful to the retrieved contexts, but it does not capture the exception for overtime work."
+      },
+      {
+        "id": "A14",
+        "question": "What are the maximum working hours for an adolescent worker?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "The Act limits an adolescent\u2019s ordinary work to **no more than seven (7) hours in a day and no more than forty\u2011two (42) hours in a week**\u3010Sindh Shops and Commercial Establishments Act (2015) Section\u202f8 \u2014 Daily, weekly hours and overtime., p.8\u3011.",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.8,
+        "notes": "The system's answer is fully faithful and relevant, but the context precision and recall could be improved by retrieving more relevant sections of the Acts."
+      },
+      {
+        "id": "A15",
+        "question": "At what rate is overtime work paid?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "Overtime work must be paid at **twice the normal (ordinary) rate of wages**. (Sindh Shops and Commercial Establishments Act 2015, s.\u202f9, p.\u202f9; Sindh Terms of Employment (Standing Orders) Act 2015, s.\u202f10, p.\u202f11)",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.8,
+        "notes": "The generated answer is mostly faithful to the retrieved contexts, but slightly rephrases the original text."
+      },
+      {
+        "id": "A16",
+        "question": "Until what time can a shop stay open in the evening?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "A shop may remain open until\u202f8:00\u202fp.m. on any day; any customer already waiting can be served for up to thirty minutes after that time.\u202f(Sindh Shops and Commercial Establishments Act\u202f2015, s.\u202f7, p.\u202f8)",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful, relevant, and based on all relevant contexts, and the contexts are sufficient to produce the reference answer."
+      },
+      {
+        "id": "A17",
+        "question": "How long can an employee work continuously before getting a rest break?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "An adult employee may not be required or permitted to work continuously for more than\u202fsix\u202fhours, and an adolescent may not work continuously for more than\u202fthree\u2011and\u2011a\u2011half\u202fhours, unless a rest\u2011or\u2011meal interval of at least one hour is provided. (Sindh Shops and Commercial Establishments Act\u202f2015, s.\u202f7, p.\u202f8)",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's generated answer accurately reflects the relevant section of the Sindh Shops and Commercial Establishments Act 2015."
+      },
+      {
+        "id": "A18",
+        "question": "What is the current minimum wage for unskilled workers in Sindh?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "The government\u2019s latest Gazette notification fixes the minimum monthly wage for unskilled adult and adolescent workers at **Rs\u202f40,000 per month**, effective 1\u202fJuly\u202f2025 (Sindh Minimum Wages \u2014 Gazette Notification (2015), p.1).\n\nNote: rates in this citation may have been revised since publication \u2014 verify against the latest official notification.",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful and relevant, but the context precision could be improved by excluding irrelevant sections like repeal of previous laws."
+      },
+      {
+        "id": "A19",
+        "question": "How is the Minimum Wages Board constituted?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "The Minimum\u202fWages\u202fBoard is formed under **Section\u202f3** of the Sindh Minimum\u202fWages\u202fAct,\u202f2015.  \n- **Composition** \u2013 the Board consists of:  \n  1. a **Chairperson**;  \n  2. **one member to represent the employers**;  \n  3. **one member to represent the workers**;  \n  4. **one member to represent the employers connected with the industry or trade concerned**; and  \n  5. **one member to represent the workers engaged in that industry or trade**.  \n\n- **Appointment** \u2013 the Chairperson and all members are **appointed by the Government**. The Chairperson must be a person with adequate knowledge of industrial, labour and economic conditions and must not be connected with any industry or employers\u2019/workers\u2019 organization. The employer\u2011 and worker\u2011representative members are appointed after considering nominations, if any, from organisations that the Government deems representative of those groups (Section\u202f3,\u202f(2)\u2013(5)).  \n\n(Citation: Sindh Minimum Wages Act\u202f2015, s.\u202f3, p.\u202f5)",
+        "faithfulness": 0.8,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.8,
+        "notes": "The generated answer is mostly faithful to the retrieved contexts, but it includes some additional information not present in the contexts."
+      },
+      {
+        "id": "A20",
+        "question": "Can an employer legally pay a worker less than the declared minimum wage?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "No. Under the Sindh Minimum Wages Act\u202f2015 an employer is prohibited from paying any worker a wage rate lower than the rate declared as the minimum wage for that worker, and a breach is punishable by imprisonment, a fine and liability to pay the shortfall (Sindh Minimum Wages Act\u202f2015, s.\u202f9(1)\u2011(3), p.\u202f9).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful, relevant, and grounded in the retrieved contexts, which are also highly relevant and sufficient to answer the question."
+      },
+      {
+        "id": "A21",
+        "question": "By when must wages be paid in an establishment with fewer than 1,000 employees?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "Wages in an establishment that employs fewer than\u202f1,000 persons must be paid **before the expiry of the seventh day after the last day of the wage period** in respect of which they are payable (Sindh Payment of Wages Act\u202f2015, s.\u202f5(1)(a), p.\u202f5).",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.9,
+        "notes": "The generated answer is mostly faithful to the retrieved contexts, but slightly rephrases the original text without adding new information."
+      },
+      {
+        "id": "A22",
+        "question": "By when must wages be paid in a larger establishment (1,000 or more employees)?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "In an establishment that employs more than\u202f1,000 workers, wages must be paid on a working day **before the expiry of the tenth day after the last day of the wage period** (i.e., by the 10th day). \n\n(Sindh Terms of Employment (Standing Orders) Act\u202f2015, s.\u202f10, p.\u202f11; Sindh Payment of Wages Act\u202f2015, s.\u202f5, p.\u202f5)",
+        "faithfulness": 0.8,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.8,
+        "notes": "The generated answer is mostly faithful to the retrieved contexts, but slightly rephrases the information from Standing Order 10 of the Sindh Terms of Employment (Standing Orders) Act 2015."
+      },
+      {
+        "id": "A23",
+        "question": "If my employment is terminated, when must my final wages be paid?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "Your final wages must be paid **before the expiry of the second working day after the day on which your employment is terminated**.  \n\n- (Sindh Shops and Commercial Establishments Act 2015, s.\u202f11, p.\u202f9)  \n- (Sindh Payment of Wages Act 2015, s.\u202f5, p.\u202f5)  \n- (Sindh Terms of Employment (Standing Orders) Act 2015, s.\u202f16, p.\u202f15)",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful and relevant, but the context precision could be improved by excluding irrelevant sections."
+      },
+      {
+        "id": "A24",
+        "question": "What kinds of deductions can legally be made from an employee's wages?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "The Sindh Payment of Wages Act, 2015 permits deductions only of the following kinds\u202f:\n\n* **Fines** (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6).  \n* **Absence from duty** \u2013 when the employee is absent from the place(s) where he is required to work (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6; see also s.\u202f9 for the rule on proportionate amounts).  \n* **Damage or loss** \u2013 for damage to or loss of goods (or money) entrusted to the employee and directly attributable to his neglect or default (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6).  \n* **Amenities and services supplied by the employer** as authorized by the Government (excluding tools and raw materials) (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6).  \n* **Recovery of advances or adjustment of over\u2011payments of wages** (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6; see also s.\u202f12 for conditions).  \n* **Income\u2011tax** payable by the employee (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6).  \n* **Court or other competent authority orders** (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6).  \n* **Provident\u2011fund contributions or repayment of advances** to any provident fund covered by the Provident Funds Act, 1925 or recognised under the Income\u2011Tax Ordinance, 1979, or any Government\u2011approved fund (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6).  \n* **Payments to Government\u2011approved cooperative societies or to a Pakistan Post Office insurance scheme** (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6).  \n* **Deductions authorised in writing by the employee** for any Government\u2011approved war\u2011savings scheme for purchase of Government securities (Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6).\n\nIn addition, the Sindh Industrial Relations Act, 2013 allows a deduction **for trade\u2011union subscriptions** (check\u2011off) when the collective\u2011bargaining agent requests it and each employee gives his approval (Sindh Industrial Relations Act\u202f2013, s.\u202f27, p.\u202f30).",
+        "faithfulness": 0.95,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.9,
+        "context_recall": 0.95,
+        "notes": "The system's generated answer is mostly faithful to the retrieved contexts, but it includes some minor details not explicitly mentioned in the contexts."
+      },
+      {
+        "id": "A25",
+        "question": "How much can be deducted from wages for a day of unauthorized absence?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "For a single day that an employee is absent without authorization, the employer may deduct only the portion of the wage that corresponds to that day.  In other words, the deduction \u201cshall in no case bear to the wages payable \u2026 a larger proportion than the period for which he was absent bears to the total period \u2026 during which \u2026 he was required to work\u201d (Sindh Payment of Wages Act\u202f2015, s.\u202f9(2), p.\u202f8).  Thus the maximum deduction for one unauthorized day is the employee\u2019s one\u2011day wage (or the proportionate amount of the wage period).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's generated answer accurately reflects the relevant section of the Sindh Payment of Wages Act 2015, and the retrieved contexts are all highly relevant to the question."
+      },
+      {
+        "id": "A26",
+        "question": "How are wage advances recovered from an employee's pay?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "Wage\u2011advances may be taken back by deducting them from the employee\u2019s wages, but only in accordance with the conditions set out in the Sindh Payment of Wages Act:\n\n* **Advance given before employment** \u2013 it must be recovered from the employee\u2019s first full\u2011wage payment after the advance was made, and such a recovery cannot be made for advances that were given for travelling expenses.  \n\n* **Advance of wages not yet earned** \u2013 the recovery is limited by any Government\u2011made rules that prescribe how large an advance may be and the instalment schedule for repayment.  \n\nThese deductions are permissible because they fall under the \u201cdeduction for recovery of advances\u201d listed in Section\u202f7(e) of the same Act.  \n\n(\u200bSindh Payment of Wages Act\u202f2015, s.\u202f12, p.\u202f9; Sindh Payment of Wages Act\u202f2015, s.\u202f7, p.\u202f6)",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.8,
+        "notes": "The generated answer is mostly faithful to the retrieved contexts, but slightly misinterprets the conditions for recovering advances given before employment began."
+      },
+      {
+        "id": "A27",
+        "question": "What share of the workforce must a trade union represent to be certified as the collective bargaining agent?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "A trade union can be certified as the collective\u2011bargaining agent only if it represents a minimum share of the workforce:\n\n* **If there is only one registered trade union in the establishment (or group of establishments/industry)**, it must have at least **one\u2011third** of the total workmen as members\u202f\u2014\u202f(\u200bSindh Industrial Relations Act\u202f2013, s.\u202f24(1), p.\u202f24\u200b).\n\n* **If there is more than one registered trade union**, a union may apply to be the collective\u2011bargaining agent only when it has at least **one\u2011fifth** of the total workmen as members\u202f\u2014\u202f(\u200bSindh Industrial Relations Act\u202f2013, s.\u202f24(2), p.\u202f24\u200b).",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.9,
+        "notes": "The system's answer is mostly faithful to the retrieved contexts, but it slightly misinterprets the threshold for certification in the case of multiple registered trade unions."
+      },
+      {
+        "id": "A28",
+        "question": "How much advance notice is required before a legal strike or lock-out?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "A legal strike or lock\u2011out may be undertaken only after a notice period of **fourteen days** has been given. (Sindh Industrial Relations Act 2013, s.\u202f37, p.\u202f38; Sindh Industrial Relations Act 2013, s.\u202f41(1), p.\u202f39)",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully supported by the retrieved contexts and directly addresses the question asked, with all retrieved contexts being relevant and sufficient to produce the reference answer."
+      },
+      {
+        "id": "A29",
+        "question": "What happens after a notice of strike or lock-out is served?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "When a party serves a notice of strike or lock\u2011out it must at the same time give a copy of that notice to the conciliator, who is then required to commence conciliation proceedings and also forward a copy of the notice to the Labour Court (Sindh Industrial Relations Act\u202f2013, s.\u202f38, p.\u202f38).  \n\nThe notice period is fourteen days (Sindh Industrial Relations Act\u202f2013, s.\u202f37, p.\u202f38).  After that period expires \u2013 or earlier if the conciliator declares the conciliation proceedings to have failed, whichever is later \u2013 the workmen may go on strike and the employer may declare a lock\u2011out (Sindh Industrial Relations Act\u202f2013, s.\u202f41(1), p.\u202f39).  At any time, either before or after the strike or lock\u2011out begins, the disputing party may apply to the Labour Court for adjudication of the dispute (ibid.).",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.9,
+        "notes": "The generated answer is mostly faithful to the contexts, but slightly misinterprets the timing of the conciliator's declaration of failed conciliation proceedings."
+      },
+      {
+        "id": "A30",
+        "question": "How does a worker raise a grievance with their employer?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "A worker must put the grievance in writing to the employer (himself or through his shop\u2011steward or collective\u2011bargaining agent) within three\u202fmonths of the cause of the grievance.  The employer then has to reply in writing \u2013 within\u202f15\u202fdays if the grievance was sent directly by the worker, or within\u202f7\u202fdays if it was sent through the shop\u2011steward or collective\u2011bargaining agent (Sindh Industrial Relations Act\u202f2013, s.\u202f34(1)\u2011(3), p.\u202f36).",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.7,
+        "notes": "The system's answer is mostly faithful to the retrieved contexts, but it incorrectly states that the employer must reply within 7 days if the grievance was sent through the shop steward or collective bargaining agent."
+      },
+      {
+        "id": "A31",
+        "question": "Who is qualified to preside over a Labour Court in Sindh?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "A Labour Court must have a single presiding officer appointed by the Government, and only a person who **has been or is a District Judge or an Additional District Judge** is qualified for that appointment (Sindh Industrial Relations Act\u202f2013, s.\u202f45, p.\u202f41).",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.9,
+        "notes": "The system's answer is mostly faithful to the retrieved contexts, but it slightly rephrases the original text, and context precision could be improved by excluding irrelevant sections."
+      },
+      {
+        "id": "A32",
+        "question": "Meri salary se kitni katauti ho sakti hai?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "The Sindh\u202fPayment of Wages Act, 2015 permits **only the deductions listed in section\u202f7**:\n\n* fines;  \n* deductions for absence from duty;  \n* deductions for loss or damage to goods or money under the employee\u2019s control;  \n* deductions for amenities and services authorised by the Government;  \n* deductions for recovery of advances or adjustment of over\u2011payments;  \n* deductions of income\u2011tax;  \n* court\u2011ordered deductions;  \n* deductions for provident\u2011fund or recognised\u2011fund contributions;  \n* deductions for payments to co\u2011operative societies or Post\u2011Office insurance schemes;  \n* deductions authorised in writing by the employee for war\u2011savings schemes.  \n\n(\u200bSindh Payment of Wages Act\u202f2015, s.\u202f7(1)\u2011(2), p.\u202f6)\n\n**Limits on particular deductions**\n\n* **Absence from duty** \u2013 The amount deducted must be proportionate to the period of absence; it may not exceed the wage proportion for the time actually absent. If ten or more workers are absent together without notice, the deduction may include \u201can amount not exceeding his wages for eight days\u201d as liquidated damages. (\u200bSindh Payment of Wages Act\u202f2015, s.\u202f9(2), p.\u202f8)\n\n* **Recovery of advances** \u2013 Advances given before employment may be recovered from the first wage\u2011period, but the Act does not set a numeric ceiling; any further limits are to be fixed by Government rules. (\u200bSindh Payment of Wages Act\u202f2015, s.\u202f12(a), p.\u202f9)  \n\n* **Trade\u2011union subscriptions** \u2013 Deductions for union fund subscriptions may be made only if the amount is \u201cspecified, with the approval of each individual workman named in the demand statement\u201d supplied by the union. (\u200bSindh Industrial Relations Act\u202f2013, s.\u202f27(1), p.\u202f30)\n\nThus, **the amount that can be deducted from your salary is limited to the categories above, and for each category the deduction must either be proportionate (as for absence) or be a sum that you have expressly approved (as for union subscriptions or written authorisation). No other deductions are lawful.**",
+        "faithfulness": 0.8,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.9,
+        "notes": "The generated answer is mostly faithful to the retrieved contexts, but it includes some additional information not present in the contexts."
+      },
+      {
+        "id": "A33",
+        "question": "Naukri se nikalte waqt kitne dinon ka notice zaroori hai?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "For a permanent worker who quits (or is terminated) for any reason other than misconduct, the law requires **one month\u2019s notice** to be given by either the employer or the worker (Sindh Terms of Employment (Standing Orders) Act\u00a02015, Schedule Standing Order\u00a016, p.15).  \n\nTemporary workers (including monthly\u2011rated, weekly\u2011rated, daily\u2011rated, piece\u2011rated, probationers, \u201cbadli\u201d or contract workers) are **not required to give any notice** when they leave employment of their own accord (Sindh Terms of Employment (Standing Orders) Act\u00a02015, Schedule Standing Order\u00a016, p.15).",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.9,
+        "notes": "The generated answer accurately reflects the notice period for permanent workers, but slightly misrepresents the context by implying that temporary workers are not required to give any notice, whereas the actual text states that they are not entitled to any notice if their services are terminated by the employer, but they are required to give notice if they leave employment of their own accord."
+      },
+      {
+        "id": "A34",
+        "question": "Mujhe maternity leave kitne hafton ki milegi?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "You are entitled to a total of\u202f**16\u202fweeks** of maternity leave \u2013\u202ffour weeks of pre\u2011natal leave followed by twelve weeks of post\u2011natal leave (Sindh Maternity Benefits Act\u202f2018, s.\u202f3, p.\u202f1).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful and relevant, but the context precision could be improved by excluding irrelevant sections like Section 14 of the Sindh Shops and Commercial Establishments Act (2015)."
+      },
+      {
+        "id": "A35",
+        "question": "Sindh mein kam se kam tankhwah kitni hai?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "The minimum monthly wage fixed for unskilled adult and adolescent workers in Sindh is **Rs\u202f40,000 per month** (effective 1\u202fJuly\u202f2025)\u3010Sindh Minimum Wages \u2014 Gazette Notification (2015), p.1\u3011.\n\nNote: rates in this citation may have been revised since publication \u2014 verify against the latest official notification.",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's generated answer is fully faithful, relevant, and sufficient, and all retrieved contexts are relevant to answering the question."
+      },
+      {
+        "id": "A36",
+        "question": "What is the gratuity contribution rate an employer must pay on retirement?",
+        "known_hard": false,
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0,
+        "notes": "The system's generated answer is completely unrelated to the question and the retrieved contexts do not provide any relevant information about gratuity contribution rates."
+      },
+      {
+        "id": "A37",
+        "question": "How much compensation is a worker entitled to for a permanent disability caused by a workplace accident?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "A worker who suffers a permanent disability in a workplace accident is entitled to compensation that is **not less than the amount specified in Schedule\u202fIV of the Workmen\u2019s\u202fCompensation Act,\u202f1923**.  The standing\u2011order requires that each permanent worker be insured for at least that amount, and any claim is to be settled in the same manner as under the Workmen\u2019s\u202fCompensation Act.\u202f(Sindh Terms of Employment (Standing Orders) Act\u202f2015, Schedule Standing Order\u202f12, p.\u202f12).",
+        "faithfulness": 0.8,
+        "answer_relevancy": 0.9,
+        "context_precision": 0.8,
+        "context_recall": 0.7,
+        "notes": "The generated answer is mostly faithful to the retrieved contexts, but slightly misinterprets the compensation amount as being specified in Schedule IV, whereas it is actually not less than that amount."
+      },
+      {
+        "id": "Q51",
+        "question": "How many days of annual leave do I get under Sindh labor law?",
+        "known_hard": true,
+        "refused": false,
+        "answer": "Under the Sindh Shops and Commercial Establishments Act, an employee is entitled to **14\u202fdays of paid annual leave** after completing twelve months of continuous employment (Sindh Shops and Commercial Establishments Act 2015, s.\u202f14, p.\u202f11).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful and relevant, but the context precision could be improved by excluding unrelated sections like Sindh Minimum Wages and Sindh Terms of Employment (Standing Orders) Act."
+      },
+      {
+        "id": "F1-turn1",
+        "question": "How much maternity leave do I get?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "You are entitled to **four weeks of leave before your expected delivery date and twelve weeks of leave after delivery**, giving a combined total of **sixteen weeks of paid maternity leave** (Sindh Maternity Benefits Act\u202f2018, s.\u202f3, p.\u202f1).",
+        "faithfulness": 0.8,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.8,
+        "notes": "The system's answer is mostly faithful to the retrieved contexts, but it slightly misstates the total leave as 'sixteen weeks of paid maternity leave' when the correct total is simply 'sixteen weeks'."
+      },
+      {
+        "id": "F2-turn1",
+        "question": "How many days of annual leave am I entitled to?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "You are entitled to **fourteen days of annual leave with full wages after each twelve\u2011month period of continuous employment** (Sindh Shops and Commercial Establishments Act 2015, s.\u202f14, p.\u202f11).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully faithful, relevant, and based on all relevant contexts, and the contexts are sufficient to produce the reference answer."
+      },
+      {
+        "id": "F2-turn2",
+        "question": "What about sick leave?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "- **Entitlement** \u2013 Every employee is entitled to sick leave with full wages for **eight days in each calendar year**.  If the employee does not use the sick leave in that year, it may be carried forward, but the total amount of accumulated sick leave **must not exceed sixteen days at any time** (Sindh Shops and Commercial Establishments Act 2015, s.\u202f15(2), p.\u202f12).\n\n- **Payment conditions** \u2013 For each day of sick leave the employee must be paid **full wages** calculated at the rate equivalent to the employee\u2019s daily average earnings during the three months preceding the leave (Sindh Shops and Commercial Establishments Act 2015, s.\u202f17(1), p.\u202f12).",
+        "faithfulness": 0.9,
+        "answer_relevancy": 0.9,
+        "context_precision": 0.8,
+        "context_recall": 0.8,
+        "notes": "The system's answer is mostly faithful to the retrieved contexts, but slightly misinterprets the maximum accumulation of sick leave as 'sixteen days at any time' instead of 'sixteen days at any one time'."
+      },
+      {
+        "id": "F3-turn1",
+        "question": "What is the minimum wage for unskilled workers in Sindh?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "The minimum monthly wage fixed for unskilled adult and adolescent workers in Sindh is **Rs\u202f40,000** per month, effective from\u202f1\u202fJuly\u202f2025 (Sindh Minimum Wages\u202f\u2014\u202fGazette Notification (2015), p.1).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's generated answer is fully faithful, relevant, and accurate, and the retrieved contexts are sufficient to answer the question."
+      },
+      {
+        "id": "F4-turn1",
+        "question": "How much notice is needed to terminate a permanent employee?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "A permanent employee must be given **one month\u2019s written notice** (or, in lieu of notice, one month\u2019s wages based on the average of the last three months\u2019 earnings) before termination.\u202f(Sindh Shops and Commercial Establishments Act 2015, s.\u202f19(1), p.\u202f13; Sindh Terms of Employment (Standing Orders) Act 2015, Schedule Standing Order\u202f16(1), p.\u202f15)",
+        "faithfulness": 0.9,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.8,
+        "context_recall": 0.9,
+        "notes": "The generated answer is mostly faithful to the retrieved contexts, but slightly overstates the information by mentioning the average of the last three months\u2019 earnings, which is not explicitly stated in the contexts."
+      },
+      {
+        "id": "F4-turn2",
+        "question": "Is it different for a temporary employee?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "Yes. A permanent employee must be given one month\u2019s written notice (or one month\u2019s wages in lieu) (Sindh Shops and Commercial Establishments Act 2015, s.19, p.13). A temporary employee is not entitled to any notice or pay in lieu of notice (Sindh Shops and Commercial Establishments Act 2015, s.19, p.13). The same distinction appears in the Standing Orders: permanent workers require one month\u2019s notice (or wages in lieu) (Sindh Terms of Employment (Standing Orders) Act 2015, s.16, p.15), while temporary workers are not entitled to any notice (Sindh Terms of Employment (Standing Orders) Act 2015, s.16, p.15).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The generated answer accurately reflects the relevant laws and regulations regarding notice and pay in lieu for temporary employees in Sindh, Pakistan."
+      },
+      {
+        "id": "F5-turn1",
+        "question": "How many days' notice is required before a legal strike?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "A legal strike requires a notice period of **fourteen days** (the notice of strike must be given fourteen days in advance) (Sindh Industrial Relations Act 2013, s.\u202f37, p.\u202f38).",
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "context_recall": 1.0,
+        "notes": "The system's answer is fully supported by the retrieved contexts and directly addresses the question."
+      },
+      {
+        "id": "F5-turn2",
+        "question": "What happens once that notice is served?",
+        "known_hard": false,
+        "refused": false,
+        "answer": "After the fourteen\u2011day notice required by **Section\u202f37** expires, the parties may proceed to a legal strike (or a lock\u2011out) if the dispute has not been settled and has not been referred to an arbitrator.  Specifically, **Section\u202f41(1)** provides that \u201cthe workmen may go on strike, the employer may declare a lock\u2011out, on the expiration of the period of the notice under section\u202f37 or upon a declaration by the conciliator that the conciliation proceedings have failed, whichever is later.\u201d (Sindh Industrial Relations Act\u202f2013, s.37, p.38; s.41(1), p.39)",
+        "faithfulness": 0.6,
+        "answer_relevancy": 0.4,
+        "context_precision": 0.8,
+        "context_recall": 0.6,
+        "notes": "The generated answer is partially faithful and relevant, but it fails to address the specific question about what happens once the notice is served, and it includes irrelevant information about legal strike and lock-out."
+      }
+    ],
+    "refusal_results": [
+      {
+        "id": "R1",
+        "question": "How much paternity leave is a father entitled to in the private sector in Sindh?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "refused as required"
+      },
+      {
+        "id": "R2",
+        "question": "What percentage of my salary must my employer contribute to my old-age (EOBI) pension?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "refused as required"
+      },
+      {
+        "id": "R3",
+        "question": "What percentage of an employee's salary must an employer contribute to a provident fund?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "no forbidden pattern found"
+      },
+      {
+        "id": "R4",
+        "question": "What machinery safety standards must a factory follow under the Sindh Factories Act?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "refused as required"
+      },
+      {
+        "id": "R5",
+        "question": "What is the minimum wage for unskilled workers in Punjab?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "no forbidden pattern found"
+      },
+      {
+        "id": "R6",
+        "question": "How much income tax is withheld from my monthly salary?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "refused as required"
+      },
+      {
+        "id": "R7",
+        "question": "What is the procedure for filing a workplace sexual harassment complaint in Sindh?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "refused as required"
+      },
+      {
+        "id": "R8",
+        "question": "What are the rules for employing children under the Sindh Prohibition of Employment of Children Act?",
+        "refused": false,
+        "answer": "Under the Sindh Prohibition of Employment of Children provision, a child may not be required, permitted or employed to work in any establishment, irrespective of the nature of the work (Sindh Shops and Commercial Establishments Act 2015, s.\u202f20, p.\u202f13).",
+        "correct": false,
+        "reason": "did not refuse (strict refusal required)"
+      },
+      {
+        "id": "R9",
+        "question": "What is the capital of Pakistan?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "refused as required"
+      },
+      {
+        "id": "R10",
+        "question": "At what age can I start claiming my federal EOBI pension?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "refused as required"
+      },
+      {
+        "id": "F1-turn2",
+        "question": "And what about paternity leave?",
+        "refused": true,
+        "answer": "I could not find this in the ingested laws.",
+        "correct": true,
+        "reason": "refused as required"
+      },
+      {
+        "id": "F3-turn2",
+        "question": "Is there a different rate for skilled workers?",
+        "refused": false,
+        "answer": "The Gazette notification dated\u202f28\u202fJuly\u202f2025 fixes the minimum monthly wage at **Rs\u202f40,000** for unskilled adult and adolescent workers and expressly states that \u201cthe wages for skilled and semi\u2011skilled workers \u2026 must not be lower than the minimum wage fixed for unskilled workers\u201d\u3010Sindh Minimum Wages Gazette Notification 2015, p.1\u3011.  \nTherefore, the minimum wage applicable to skilled workers in Sindh from\u202f1\u202fJuly\u202f2025 is **Rs\u202f40,000 per month**.",
+        "correct": true,
+        "reason": "no forbidden pattern found"
+      }
+    ],
+    "follow_up_subject_results": [
+      {
+        "id": "F1-turn1",
+        "original_question": "How much maternity leave do I get?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "maternity"
+        ],
+        "rewritten_query": "How much maternity leave do I get?"
+      },
+      {
+        "id": "F1-turn2",
+        "original_question": "And what about paternity leave?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "paternity"
+        ],
+        "rewritten_query": "What is the duration of paternity leave?"
+      },
+      {
+        "id": "F2-turn1",
+        "original_question": "How many days of annual leave am I entitled to?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "annual"
+        ],
+        "rewritten_query": "How many days of annual leave am I entitled to?"
+      },
+      {
+        "id": "F2-turn2",
+        "original_question": "What about sick leave?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "sick"
+        ],
+        "rewritten_query": "What is the policy on sick leave, including how many days are I entitled to and what are the payment conditions?"
+      },
+      {
+        "id": "F3-turn1",
+        "original_question": "What is the minimum wage for unskilled workers in Sindh?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "minimum wage",
+          "unskilled"
+        ],
+        "rewritten_query": "What is the minimum wage for unskilled workers in Sindh?"
+      },
+      {
+        "id": "F3-turn2",
+        "original_question": "Is there a different rate for skilled workers?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "skilled"
+        ],
+        "rewritten_query": "What is the minimum wage for skilled workers in Sindh as of 1 July 2025?"
+      },
+      {
+        "id": "F4-turn1",
+        "original_question": "How much notice is needed to terminate a permanent employee?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "permanent"
+        ],
+        "rewritten_query": "How much notice is needed to terminate a permanent employee?"
+      },
+      {
+        "id": "F4-turn2",
+        "original_question": "Is it different for a temporary employee?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "temporary"
+        ],
+        "rewritten_query": "Is the notice period for termination of employment different for temporary employees compared to permanent employees?"
+      },
+      {
+        "id": "F5-turn1",
+        "original_question": "How many days' notice is required before a legal strike?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "strike"
+        ],
+        "rewritten_query": "How many days' notice is required before a legal strike?"
+      },
+      {
+        "id": "F5-turn2",
+        "original_question": "What happens once that notice is served?",
+        "checked": true,
+        "correct": true,
+        "matched_keywords": [
+          "strike",
+          "notice"
+        ],
+        "rewritten_query": "What happens after the fourteen days' notice period for a legal strike?"
+      }
+    ]
+  }
+}

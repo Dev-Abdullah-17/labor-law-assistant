@@ -9,7 +9,8 @@ standalone.
 
 Uses Groq's free tier (llama-3.1-8b-instant — a small, fast model built
 for exactly this kind of lightweight task) — see PROGRESS.md for why
-Groq over Anthropic/Gemini.
+Groq over Anthropic/Gemini. Translation is the one exception: it uses
+the larger openai/gpt-oss-120b model instead (see TRANSLATE_MODEL below).
 """
 
 from __future__ import annotations
@@ -19,6 +20,18 @@ import re
 from groq import Groq
 
 MODEL = "llama-3.1-8b-instant"
+
+# Milestone 5's Baseline v3 eval caught a real, reproducible bug: the small
+# model mistranslated Roman Urdu inconsistently across calls for the exact
+# same input (e.g. "tankhwah" (wage) as "temperature" in one run, "minimum
+# percentage of votes" in another) — silently sending garbage into
+# retrieval with no way to recover downstream. Compared directly against
+# openai/gpt-oss-120b (the same model generate_answer already uses) on the
+# same 3 Roman Urdu test queries: the larger model translated all 3
+# correctly and consistently, the smaller one got all 3 wrong. Unlike query
+# rewriting (where an imperfect paraphrase can still retrieve fine),
+# translation errors are unrecoverable, so accuracy is worth the extra cost.
+TRANSLATE_MODEL = "openai/gpt-oss-120b"
 
 SYSTEM_PROMPT = """Rewrite the user's follow-up question into a standalone question that makes sense without the prior conversation, using the chat history for context. Resolve pronouns and implicit references (e.g. "and what about X?" becomes a full question about X in the same context as the prior turn).
 
@@ -104,7 +117,7 @@ def translate_to_english(question: str) -> str:
         return question
 
     completion = _get_client().chat.completions.create(
-        model=MODEL,
+        model=TRANSLATE_MODEL,
         messages=[
             {"role": "system", "content": TRANSLATE_SYSTEM_PROMPT},
             {"role": "user", "content": question},

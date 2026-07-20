@@ -279,12 +279,12 @@ Refusal accuracy jumped from 9/12 to 11/12 — the two invalid test questions (R
 
 ---
 
-## Milestone 5 — Hybrid search + measured improvement (2026-07-17)
+## Milestone 5 — Hybrid search + measured improvement (2026-07-17, corrected 2026-07-20)
 
 ### Built
 - `retrieval/bm25_index.py` — a lazy, in-memory `BM25Okapi` index over every chunk (no persisted build step; the ~250-chunk corpus is cheap to tokenize per process, same singleton pattern as `retrieval.embed`'s model cache).
 - `retrieval/query.py` rewritten: pulls top-20 from both the existing vector search and BM25, merges by reciprocal rank fusion (RRF, k=60), and returns the fused top-5. Also gained an `act_name` filter parameter (applied to both search paths), which is what Milestone 5 point 3 (metadata filtering) needed anyway.
-- `api/rewrite.py` gained `translate_to_english()` — an LLM translation step for Roman Urdu / Urdu script input — and a tightened `SYSTEM_PROMPT` instructing the rewriter not to pad rewritten queries with full Act names/years unless the user actually asked about a specific Act.
+- `api/rewrite.py` gained `translate_to_english()` — an LLM translation step for Roman Urdu / Urdu script input, using `openai/gpt-oss-120b` (not `llama-3.1-8b-instant`; see Baseline v3 below for why) — and a tightened `SYSTEM_PROMPT` instructing the rewriter not to pad rewritten queries with full Act names/years unless the user actually asked about a specific Act.
 - `api/main.py`: `/chat` pipeline is now `rewrite_query` → `translate_to_english` → `retrieve` → `generate_answer`; new `GET /acts` endpoint (distinct Act names actually in the index); `ChatRequest.act_filter`.
 - `frontend/index.html`: an Act-filter `<select>` populated from `/acts`, included in the chat POST body when set.
 - New tests: `tests/test_bm25_index.py`, `tests/test_query.py` (retrieval had **zero** pytest coverage before this — a real, standing CLAUDE.md gap, closed here), plus new cases in `tests/test_generate.py`, `tests/test_rewrite.py`, and a new `tests/test_main.py` (the FastAPI layer had no tests either).
@@ -309,45 +309,54 @@ Ran the same underlying deduction question three ways through the live retriever
 
 **A real bug found while building this**: the first version always called the LLM to translate, instructed to pass English straight through unchanged. `llama-3.1-8b-instant` does not reliably follow that instruction — direct testing found it sometimes responds to plain English input with something like *"Please provide the rest of the question..."*, silently corrupting the majority of queries (all-English ones) before they ever reach retrieval. **Fixed** with a cheap, deterministic pre-check (`_needs_translation`): real Urdu-script characters, or a small list of distinctive Roman Urdu words unlikely to appear in English (`hai`, `kitni`, `zaroori`, `naukri`, `meri`, etc.) — only then is the LLM called at all. Caught this by testing the actual live `/chat` pipeline in a browser (not just unit tests, which had mocked the client and couldn't have caught it), per CLAUDE.md's UI-testing guidance.
 
-**Result**: `A33` now answers fully correctly (notice-period question, was completely unrelated retrieval before). `A32` now retrieves the correct Payment of Wages Act sections and produces a grounded, honest answer, though the translator renders "katauti" (deduction) as "income tax deduction" specifically rather than the more general "deduction" — a real, disclosed translation imprecision, not a fabrication (the answer correctly says the Act doesn't cap that category numerically).
+**Result**: `A33` now answers fully correctly (notice-period question, was completely unrelated retrieval before). `A32` now retrieves the correct Payment of Wages Act sections and produces a fully accurate, complete answer enumerating every real deduction category from Section 7 — an earlier draft of this note flagged the translator rendering "katauti" (deduction) as "income tax deduction" specifically, but that was an artifact of the small-translation-model bug described below (Baseline v3), not a settled limitation; it's resolved as a side effect of that fix, confirmed by re-reading `A32`'s corrected answer directly rather than assuming.
 
 ### A second real bug found via actual browser testing, not just pytest
 Testing the new Act-filter dropdown live (Playwright, per CLAUDE.md's "test in a browser" guidance) turned up a genuine rendering bug pytest could never have caught: citation summaries showed `â€"` instead of an em-dash. Root cause: `frontend/index.html` had no `<meta charset="utf-8">` tag, so the browser guessed an encoding for the static file itself (including its own literal `—` character in the JS template) rather than reading it as UTF-8. Fixed with one line; re-verified visually (screenshot) that citations render cleanly.
 
-### Baseline v3 results (`eval/results/2026-07-17.json`)
+### Baseline v3 — corrected after root-causing 2 of 3 initially-reported regressions (2026-07-20)
 
-| Category | Metric | v2 (pre-hybrid) | v3 (post-hybrid) |
+The first Baseline v3 run (2026-07-17) reported 3 "newly failing" cases (`A12`, `A35`, `A36`) versus v2. On audit, that description was wrong in two different ways, and a real bug was hiding behind it:
+
+1. **`A36` (gratuity) was never "newly failing."** It was refused in both v2 (2026-07-15) and this run — checked directly against both result files. It's a pre-existing retrieval gap (Standing Order 16(6)'s gratuity clause is buried in a long, differently-titled "Termination of employment" section, unrelated to the "Sindh"-keyword collision hybrid search targets) that existed the moment `A36` was created during the v1→v2 correction pass. It never passed, so it can't have regressed. This was a genuine error in how the first v3 write-up described it — corrected here.
+
+2. **`A35` (Roman Urdu minimum wage) was a real, fixable bug — root-caused and fixed.** Directly reproduced: `translate_to_english("Sindh mein kam se kam tankhwah kitni hai?")` returned *"What is the minimum **temperature** in Sindh?"* — `llama-3.1-8b-instant` mistranslated "tankhwah" (wage). Re-running the same translation call showed the error wasn't even consistent (a second attempt produced "minimum **percentage of votes**"), while `openai/gpt-oss-120b` (the same model `generate_answer` already uses) translated all 3 Roman Urdu test queries correctly and consistently in a direct side-by-side comparison. **Fix**: `translate_to_english()` now uses `openai/gpt-oss-120b` instead — translation errors are unrecoverable downstream (unlike an imperfect query rewrite, which can still retrieve fine), so accuracy is worth the extra cost here specifically. Re-verified live: `A35` now translates and answers correctly.
+
+3. **`A12` (worker classification) is the one genuine regression** — root-caused, not fixed, deferred with a reason (below).
+
+The full eval was re-run after the translation fix — this is the **final, corrected Baseline v3** (`eval/results/2026-07-20.json`), and it's what the table below reports. (The original, translation-bug-affected run is kept at `eval/results/2026-07-17.json` for the record, since it's part of the honest history of how this baseline was arrived at — not used as the reported number.)
+
+| Category | Metric | v2 (`2026-07-15.json`) | v3 (`2026-07-20.json`) |
 |---|---|---|---|
-| Answerable | faithfulness | 0.763 | **0.900** |
-| | answer_relevancy | 0.841 | **0.948** |
-| | context_precision | 0.724 | **0.829** |
-| | context_recall | 0.746 | **0.874** |
+| Answerable | faithfulness | 0.763 | **0.895** |
+| | answer_relevancy | 0.841 | **0.939** |
+| | context_precision | 0.724 | **0.825** |
+| | context_recall | 0.746 | **0.873** |
 | Expected refusal | binary accuracy | 0.917 (11/12) | 0.917 (11/12) |
 | Follow-up rewriting | subject-naming accuracy | 1.000 (10/10) | 1.000 (10/10) |
 
-Refusal accuracy and subject-naming were already strong in v2 and stayed there (unaffected by retrieval changes, as expected). The answerable metrics improved substantially across all four dimensions.
+Both runs are on the **identical, final-corrected testset** (53 entries / 58 scored cases, R3/A37 and F3-turn2 fixes already included in v2) and the same scorer; `eval/run.py`'s pipeline was updated to add the `translate_to_english` step to match production's actual `/chat` order, which is the only pipeline difference between the two runs — this is a clean v2→v3 comparison of Milestone 5's changes alone, with no v1 testset/generate.py-fix effects mixed in.
 
-**All 6 named target cases, checked individually, not just via the aggregate:**
+**Per-question status change, all 58 scored cases, verified by diffing v2 and v3's raw results (not estimated):**
 
-| Case | v2 | v3 |
+| | Count | Cases |
 |---|---|---|
-| `A1` ("...under Sindh law?") | refused | ✅ answers correctly, cited Shops Act s.14 |
-| `A4` ("...under the Sindh Maternity Benefits Act?") | refused | ✅ answers correctly, cited s.3 |
-| `Q51` (known_hard, "...under Sindh labor law?") | refused | ✅ answers correctly, cited s.14 |
-| `A32` (Roman Urdu, deductions) | refused, unrelated retrieval | ✅ answers, grounded (translation renders "katauti" as "income tax" specifically) |
-| `A33` (Roman Urdu, notice period) | refused, unrelated retrieval | ✅ answers correctly, cited Standing Order 16 |
-| `F4-turn2` (rewriter-padded query) | refused, retrieved 5 different acts' "Section 1" | ✅ answers correctly (temporary employee notice) |
+| Fixed (v2 fail → v3 pass) | 6 | `A1`, `A4`, `Q51`, `A32`, `A33`, `F2-turn2` |
+| Newly broken (v2 pass → v3 fail) | 1 | `A12` |
+| Unchanged, still passing | 49 | — |
+| Unchanged, still failing | 2 | `A36` (pre-existing retrieval gap), `R8` (test-definition inconsistency, see Baseline v2) |
 
-**Record honestly, per SPEC.md's instruction — this is not an unqualified win**: 3 answerable cases that passed in v2 now refuse in v3 (`A12` worker classification, `A35` Roman Urdu minimum wage, `A36` gratuity). Checked each rather than assuming noise:
-- `A36` (gratuity) is not new — it was already failing in both Milestone 4 baselines (v1 and v2); hybrid search does not fix it, consistent with the earlier diagnosis that this is a chunk-granularity issue (Standing Order 16(6)'s gratuity clause is buried deep in a long, differently-titled "Termination of employment" section), not the "Sindh"-keyword collision hybrid search targets.
-- `A12` (worker classification) is a **genuinely new gap**, confirmed by direct retrieval check: Standing Order 1 ("Classification of worker") does not appear in the hybrid top-5 for this query at all. Not yet root-caused further — flagged as an open item.
-- `A35`'s own LLM-judge notes claim the answer is "accurate... with all retrieved contexts relevant," which directly contradicts the fact that the system actually refused — another instance (like `A27` in Baseline v1) of the judge's free-text notes being unreliable even when nearby scores look fine. A reminder not to trust the `notes` field in `eval/results/*.json` without spot-checking the actual answer.
+**On the 6 originally-tracked target cases specifically** (`A1`, `A4`, `Q51`, `A32`, `A33`, `F4-turn2`): 5 were failing in v2 and are fixed in v3. `F4-turn2` was already passing in v2 — the specific over-padded rewrite I'd observed and diagnosed during planning (naming both Acts in full, retrieving 5 different acts' "Section 1") is real and reproducible on direct query (verified separately), but `rewrite_query` is a non-deterministic LLM call and didn't happen to produce that exact bad rewrite in either the v2 or v3 eval run. The rewriter-prompt tightening is a real, justified fix for a real, directly-observed failure mode — it just isn't provably the reason `F4-turn2` passes in the eval, since `F4-turn2` never actually failed there. `F2-turn2` passing in v3 (unflagged, unplanned) is the more concrete rewriter-related win the eval actually caught.
+
+**`A12` root cause** (not fixed — reasons below): Direct retrieval check shows Standing Order 1 ("Classification of worker" — the correct answer) does not appear in vector search's own top-10 for this query, in either v2's pure-vector setup or v3's hybrid setup — checked both directly. BM25 alone finds it, but only at rank 5 of 10, too weak a signal for RRF fusion to promote it into the final top-5 ahead of chunks (like Standing Orders' own "short title" section) that both methods rank more confidently. **v2's "pass" was not actually correct**: its answer described minimum-wage skill tiers (citing the wrong Act) rather than the real classification scheme (permanent/probationer/badli/temporary/apprentice/contract) — a wrong-topic answer the judge scored weakly (context_precision 0.4) but didn't fail outright. In v3, generation's second refusal layer, given similarly weak/adjacent retrieved context, refused instead of generating a similar wrong-topic answer. Given retrieval quality is equally poor in both runs, this looks like LLM sampling non-determinism at the refusal-judgment layer reacting differently to the same weak evidence, not a deterministic effect of RRF fusion — though the underlying retrieval gap (Standing Order 1 not ranking well under either method) is real and shared by both. **Deferred, not fixed now**: closing this needs real retrieval-quality work (e.g. chunk-level tuning or query handling specific to enumerated/definitional content like Standing Order 1), which is a bigger, separate investigation than this session's scope — recorded here rather than silently left out.
 
 ### What broke / open items
-- `A12`'s new retrieval gap is unexplained — worth a follow-up look before assuming hybrid search is strictly better in every case.
+- `A12`'s retrieval gap (Standing Order 1 not ranking well under vector, BM25, or their fusion) is real and unresolved — deferred per above, not folded into the aggregate as if fixed.
 - `R8`'s test-definition inconsistency (flagged in the Baseline v2 entry above) is still unfixed.
-- Roman Urdu retrieval is meaningfully improved but not at parity with English (`A32`'s translation imprecision).
+- `A36`'s chunk-granularity retrieval gap (gratuity clause buried in a differently-titled section) remains open, unaffected by hybrid search.
+- Roman Urdu retrieval is meaningfully improved and, after the `TRANSLATE_MODEL` fix, both `A32` and `A33` now produce fully accurate, correctly-cited answers — no known remaining Roman Urdu imprecision, though only 2 test questions cover this and a broader check would be worth doing before claiming full parity with English.
+- The LLM-judge's free-text `notes` field has now been caught twice (`A27` in Baseline v1, `A35` in the first v3 run) describing something that contradicts the actual recorded outcome — a standing reminder not to trust `notes` without spot-checking the real answer.
 
 ### Metrics
 - 74 pytest tests total (24 new: `test_bm25_index.py`, `test_query.py`, `test_main.py` are entirely new modules; `test_generate.py`/`test_rewrite.py` gained cases), all passing.
-- **Baseline v3 is the current number**: answerable faithfulness 0.900 / relevancy 0.948 / precision 0.829 / recall 0.874; refusal accuracy 11/12; follow-up subject-naming 10/10. All 6 explicitly-tracked target cases fixed; 3 new individual cases flagged honestly as open items rather than folded into the aggregate improvement story.
+- **Baseline v3 (`eval/results/2026-07-20.json`) is the official pre-Milestone-6 number**: answerable faithfulness 0.895 / relevancy 0.939 / precision 0.825 / recall 0.873; refusal accuracy 11/12; follow-up subject-naming 10/10. 6 cases fixed, 1 genuinely newly-failing (root-caused, deferred), 2 unchanged pre-existing failures, 49 unchanged passes — the full accounting, not just the aggregate.
