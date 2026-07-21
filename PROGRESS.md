@@ -360,3 +360,29 @@ Both runs are on the **identical, final-corrected testset** (53 entries / 58 sco
 ### Metrics
 - 74 pytest tests total (24 new: `test_bm25_index.py`, `test_query.py`, `test_main.py` are entirely new modules; `test_generate.py`/`test_rewrite.py` gained cases), all passing.
 - **Baseline v3 (`eval/results/2026-07-20.json`) is the official pre-Milestone-6 number**: answerable faithfulness 0.895 / relevancy 0.939 / precision 0.825 / recall 0.873; refusal accuracy 11/12; follow-up subject-naming 10/10. 6 cases fixed, 1 genuinely newly-failing (root-caused, deferred), 2 unchanged pre-existing failures, 49 unchanged passes — the full accounting, not just the aggregate.
+
+---
+
+## Milestone 6 — Case-study README + polish (2026-07-20)
+
+### Built
+- `README.md` rewritten in full as a portfolio case study, per SPEC.md's exact structure: problem → architecture diagram → key decisions & trade-offs → what broke and how it was fixed → eval numbers before/after → limitations → roadmap → screenshots → demo GIF. Every factual claim in it (dates, counts, metric numbers, which questions changed status) was re-verified against PROGRESS.md or by direct inspection while writing, not carried over from memory — caught and fixed two of my own inaccuracies in the draft before committing (see below).
+- Architecture diagram: a Mermaid flowchart (renders natively in GitHub markdown, no extra tooling) showing ingest → dual index (Chroma + BM25) → RRF fusion → two-layer refusal generation → API → frontend.
+- `docs/screenshots/` (4 PNGs) and `docs/demo.gif` — all captured live, not staged: launched the real FastAPI backend + static frontend, drove them with Playwright (same tool already used for Milestone 3's UI verification), and asked real questions. The maternity-leave answer and the paternity-leave refusal in the screenshots are genuine, unedited model output from this session.
+- Fixed the two concrete pre-existing README bugs while rewriting it: the `[CLAUDE.md](CLAUDE.md)` link was broken (the file was intentionally renamed to `.md` earlier this session, but the link never updated) — now points at the real filename; a duplicated `## Project structure` header (a copy-paste artifact) is gone.
+
+### A real frontend bug found by taking the screenshots, not by inspection
+The first screenshot of an answered question showed literal `**16 weeks**` and stray characters in the citation text — `frontend/index.html` renders every assistant message via `textContent`, so the LLM's own markdown formatting (`**bold**`, blank lines before the `superseded_risk` caveat) showed up as raw asterisks instead of being styled. This had been in every screenshot-worthy answer since Milestone 3 but was never actually looked at closely enough to notice, since prior UI checks focused on refusal styling and citation expansion, not the answer text's own formatting. Fixed with `renderInlineBold()`: escape HTML first (the answer text and chunk text aren't attacker-controlled, but escaping first is the safe default before any innerHTML use), then un-escape only two deliberately narrow patterns back into real markup — `**bold**` → `<strong>`, and blank lines → `<br><br>`. Re-captured all screenshots after the fix; confirmed clean rendering (`docs/screenshots/02_answered_with_citation.png`).
+
+### Caught two inaccuracies in my own README draft before committing
+Verifying every number rather than trusting memory (the exact discipline this project's whole eval story has been about) caught two mistakes in the first draft:
+1. Wrote "74 tests" from general recollection without re-running `pytest` — actually a safe guess in this case (it happened to be correct), but re-ran it anyway rather than leave a number unverified in a document whose whole point is "trust nothing you haven't checked."
+2. Wrote "4 of the 7 ingested acts" have the column-layout title-reordering bug, and separately "months later" for the gap between the gazette OCR fix and its regression. Both were wrong on inspection: the original finding (Milestone 2, PROGRESS.md line 53) says "4 of 5" — scoped to the first 5 core documents, before the gazette and Maternity Act existed, not "7"; and `git log` shows the OCR fix and its regression were committed the *same day* (2026-07-12), not months apart. Both corrected to precise, source-checked language.
+
+### What broke / open items
+- The frontend markdown-rendering bug (above) means any past screenshot or manual demo before this milestone showed raw `**asterisks**` — cosmetic only, never a data-correctness issue, but worth knowing if an old screenshot surfaces anywhere.
+- Nothing else new — this milestone's open items are the ones already carried from Milestone 5 (`A12`, `A36` retrieval gaps; `R8` test-definition inconsistency; thin Roman Urdu test coverage), now listed in README.md's own Limitations section for anyone reading the portfolio version first.
+
+### Metrics
+- No source-code test count change (74 pytest tests, all still passing) — this milestone is documentation and frontend polish, not new backend logic.
+- 4 new screenshots + 1 demo GIF, all captured from the real, live system in this session.

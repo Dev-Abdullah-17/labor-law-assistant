@@ -90,10 +90,33 @@
     }
   })();
 
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  // The LLM's answers use **bold** for emphasis (e.g. "**16 weeks**") and
+  // blank lines between paragraphs (e.g. before the superseded_risk caveat)
+  // — this renders just those two constructs, not full markdown, so the
+  // answer text is escaped first and only these narrow patterns are
+  // un-escaped back into real markup.
+  function renderInlineBold(text) {
+    return escapeHtml(text)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n\n/g, "<br><br>")
+      .replace(/\n/g, "<br>");
+  }
+
   function addMessage(role, text, opts = {}) {
     const div = document.createElement("div");
     div.className = `msg ${role}` + (opts.refused ? " refused" : "");
-    div.textContent = text;
+    if (role === "assistant") {
+      div.innerHTML = renderInlineBold(text);
+    } else {
+      div.textContent = text;
+    }
 
     if (opts.citations && opts.citations.length) {
       const citationsEl = document.createElement("div");
